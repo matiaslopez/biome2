@@ -1,0 +1,476 @@
+---
+title: "Biometría II  \nTP Nº 3  \nModelado de varianza"
+output: pdf_document
+latex_engine: pdflatex
+font-family: Arial
+documentclass: article
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE,size=10, tidy=TRUE, tidy.opts=list(width.cutoff=65))
+```
+## Problema 1. Trabajo de hormiga
+
+Durante los últimos años, se ha desarrollado una creciente conciencia social sobre el efecto adverso que tienen los pesticidas sobre la salud ambiental y humana. Es por ello que en lugares sensibles donde se desaconseja liberar insecticidas (en forma de polvos, sprays o líquidos en el piso), se recomienda la implementación de métodos de control de insectos minimizando el uso de insecticidas y evitando su dispersión. Particularmente para el control de hormigas se recomienda la utilización de cebos alimentarios adicionados con un compuesto activo letal. Luego de varios estudios de control de hormigas hospitalarias observaron diferencias en la eficacia de los cebos: en muchos casos los cebos comerciales no resultan efectivos, pero si lo eran cebos azucarados diluidos con la misma dosis de tóxico. En base a estas observaciones, en el Laboratorio de Insectos Sociales se propusieron estudiar aspectos comportamentales de la ingestión de cebos que expliquen la menor efectividad de los cebos comerciales en el control de hormigas con respecto a cebos alternativos preparados en laboratorio.    
+Para cumplir este objetivo, se analizó comparativamente el comportamiento alimenticio de hormigas ante estos cebos alternativos y un cebo comercial. La experiencia fue realizada con colonias de hormigas *Camponotus mus* mantenidas en el laboratorio en nidos artificiales. En una arena experimental, se suministró una gota de cebo azucarado *ad libitum*.
+
+![Esquema del dispositivo experimental.](/home/jose/Documents/materias/biome2/2017/tps/tp2/hormigas.png)
+
+Se trabajó con 20 hormigas para cada uno de los tres tratamientos aplicados:  
+
+(1) Cebo alternativo Sacarosa 30 % p/p + tóxico.  
+(2) Cebo alternativo Sacarosa 68 % p/p + tóxico.  
+(3) Cebo comercial con concentración de sacarosa similar a 68 % p/p + tóxico.   
+
+El experimento se llevó a cabo durante 5 días, midiendo 4 hormigas diferentes de cada tratamiento por día. Se las pesó antes de ingerir y luego de la ingesta, de dónde se obtuvo el peso ingerido. Sabiendo la concentración del tóxico, se obtuvo la masa ingerida de tóxico y, sabiendo las densidades de las soluciones, el volumen ingerido de solución. También se registró el tiempo de ingestión, tiempo de pausa y tiempo total (como la sumatoria de ambas variables). Estas dos mediciones resultan de interés ya que se plantea que soluciones más viscosas (aquellas con mayor concentración de azúcar) requieren mayores tiempos de ingesta, dado que la hormiga bombea la solución más lentamente y además genera que ésta haga pausas para poder llenar el buche con solución que luego repartirá en la colonia. Mayores tiempos en la fuente de alimentación provocaría un menor ingreso de tóxico en el nido por unidad de tiempo, haciendo menos eficiente a ese cebo para el control de la plaga. Teniendo en cuenta el volumen ingerido y el tiempo de ingestión resultaría de mucha utilidad estudiar la tasa de ingestión.  
+
+
+## Parte A  
+
+- Realice un análisis exploratorio de los datos. Caracterice a los tratamientos aplicados en relación a la tendencia central y dispersión de cada variable estudiada. Defina el tipo de estudio, la unidad experimental y la cantidad de réplicas. ¿Qué concluye en relación al tiempo de ingesta para cada concentración de azúcar?.  
+```{r}
+library(ggplot2)
+source("/home/jose/Documents/funciones2.R")
+horm=read.delim("/home/jose/Documents/materias/biome2/2018/tps/tp3/Hormigas.txt",header=T)
+attach(horm)
+#estructura de la base de datos, se observa el tipo de variable 
+str(horm)
+```
+
+```{r}
+# Si queremos ver que tipo de objeto son las variables de nuestro data frame de manera individual
+class(horm$Tratamiento)
+class(horm$T_ing) 
+class(horm$MTox_ing)
+```
+
+Defina el tipo de estudio: *Experimental*.    
+Unidad experimental: *Hormiga?, Nido?*.  
+Cantidad de réplicas: *20*.  
+
+```{r}
+# Descriptiva analiticamente
+#summary de toda nuestra base de datos
+summary(horm)
+library(pastecs)
+round(stat.desc(horm[,-1]),2)
+```
+
+```{r}
+#Podemos armar subset de datos para cada nievel de la variable toxico (cc, sac68 y sac30)
+#para pedir medidas descriptivas por separado
+setCC<-subset(horm, Tratamiento=="CC")
+setSAC68<-subset(horm, Tratamiento=="SAC68")
+setSAC30<-subset(horm, Tratamiento=="SAC30")
+round(stat.desc(setCC[,-1]),2)
+round(stat.desc(setSAC68[,-1]),2)
+round(stat.desc(setSAC30[,-1]),2)
+```
+  
+
+```{r}
+#una libreria muy utilizada para estas cosas es dplyr
+library(dplyr)
+setCC1 <- horm%>%filter(Tratamiento == "CC")
+#probemos a ver si hace lo mismo
+setCC == setCC1
+```
+
+```{r}
+#Si lo vemos graficamente
+library(GGally)
+ggpairs(horm[,c(1,3,4,5,6,7)],mapping = ggplot2::aes(color = horm$Tratamiento),diag = list(discrete="barDiag",continuous = wrap("densityDiag", alpha=0.5 )), upper = list(combo = wrap("box_no_facet", alpha=0.5),continuous = wrap("cor", size=2, alignPercent=0.8)),columnLabels = c("Tratamientos", "Masa ingerida", "Volumen ingerido","Tiempo ingesta", "Tiempo pausas","Tiempo total"))
+```
+    
+- Estudie la simetría de las variables analizadas.  
+
+```{r,echo=FALSE}
+a=ggplot(horm,aes(x=Tratamiento,y=MTox_ing,fill=Tratamiento))+geom_boxplot()+labs(title = "Masa de toxico ingerida")+theme(axis.text=element_text(size=4),axis.title=element_text(size=8),plot.title = element_text(hjust = 0.5,size=8),legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+b=ggplot(horm,aes(x=Tratamiento,y=VSol_ing,fill=Tratamiento))+geom_boxplot()+labs(title = "Volumen de solucion ingerida")+theme(axis.text=element_text(size=4),axis.title=element_text(size=8),plot.title = element_text(hjust = 0.5,size=8),legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+c=ggplot(horm,aes(x=Tratamiento,y=T_ing,fill=Tratamiento))+geom_boxplot()+labs(title = "Tiempo de ingesta")+theme(axis.text=element_text(size=4),axis.title=element_text(size=8),plot.title = element_text(hjust = 0.5,size=8),legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+d=ggplot(horm,aes(x=Tratamiento,y=T_pau,fill=Tratamiento))+geom_boxplot()+labs(title = "Tiempo de pausa")+theme(axis.text=element_text(size=4),axis.title=element_text(size=8),plot.title = element_text(hjust = 0.5,size=8),legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+e=ggplot(horm,aes(x=Tratamiento,y=T_tot,fill=Tratamiento))+geom_boxplot()+labs(title = "Tiempo total")+theme(axis.text=element_text(size=4),axis.title=element_text(size=8),plot.title = element_text(hjust = 0.5,size=8),legend.title = element_text(size = 6),legend.text = element_text(size = 6))
+```
+
+```{r}
+library(gridExtra) 
+grid.arrange(a,b,c,d,e,ncol=3)
+```
+
+- ¿Con cuál de las soluciones se ingiere mayor cantidad de tóxico? Analícelo a partir de un modelo estadístico lineal. Analice los supuestos. Concluya realizando recomendaciones de uso para el control de hormigas.   
+```{r}
+#Para evaluar los supuestos primero tenemos que generar el modelo. Esto permite
+#calcular los residuos del modelo.
+modelo0 <- lm(MTox_ing~Tratamiento)
+```
+  
+```{r}
+p<-ggplot(horm,aes(Tratamiento,MTox_ing))+geom_boxplot(aes(),colour="deepskyblue")
+p + xlab("Concentracion de Toxico") + ylab("Masa de toxico ingerida") +ggtitle("") 
+```
+
+```{r}
+# Supuestos
+#Calculamos los residuos y los predichos
+e<-residuals(modelo0) # residuos
+re<-rstandard(modelo0) #residuos estandarizados
+pre<-predict(modelo0) #predichos
+res<-data.frame(horm$Tratamiento, horm$MTox_ing,pre,e,round(re,2))
+colnames(res)<-c("Tratamiento", "MTox_ing", "Predichos", "Residuos", "residuos std") 
+head(res)
+```  
+Los residuos estandarizados se calculan como:
+\[RE=e_i/\sqrt{S^2_e}\]  
+
+A su vez, \[\sqrt{S^2_e}=\sum_{i=1}^ne_i^2/(n-2)\]   
+
+Hagamos el primero:
+```{r}
+residuo1=38-42.2
+sumaRes2=sum(e^2)
+(resStandard1=residuo1/sqrt(sumaRes2/nrow(horm)-3))
+```
+```{r}
+#Supuestos modelo
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Grafico de dispersion de RE vs PRED" )
+abline(0,0)
+qqnorm(e)
+qqline(e)
+```
+
+```{r}
+#prueba analitica para la homogeneidad de varianzas
+car::leveneTest(horm$MTox_ing, horm$Tratamiento)
+# Que hipotesis nula pone a prueba este supuesto?
+```  
+
+```{r}
+#prueba analitica
+shapiro.test(modelo0$residuals)
+#o
+shapiro.test(e)
+# Que hipotesis nula pone a prueba este supuesto?
+```  
+```{r}
+## Resultados generales.
+# Ver resultados en formato regresion y en formato anova.
+summary(modelo0)
+anova(modelo0)
+```
+
+```{r}
+# comparaciones multiples
+library(emmeans)
+TukeyEmmeans<-emmeans(modelo0, pairwise ~ Tratamiento)
+TukeyEmmeans
+plot(TukeyEmmeans$contrasts)
+```  
+
+```{r}
+hCI<-round(abs(as.data.frame(TukeyEmmeans$contrasts)[[5]][1]),2)
+lCI<-round(abs(as.data.frame(TukeyEmmeans$contrasts)[[6]][1]),2)
+```
+
+Se concluye que el tratamiento SAC30 es el mas recomendado ya que genera un incremento en la masa de toxico ingerido de entre `r lCI` y `r hCI`(supongamos miligramos) con respecto al cebo comercial. Asimismo, el tratamiento con SAC68 arrojo valores similares de ingesta de masa de toxico que el SAC30 por lo que recomendamos este ultimo.
+
+## Parte B  
+
+Se desea conocer si el tiempo de ingesta de las hormigas difiere entre los tratamientos. Para ello:  
+
+- Plantee el modelo en parámetros y en términos del problema. ¿Qué representan los residuos?
+
+## **Formato de regresión por dummies**  
+\[E[Y_i]=\beta_0+\beta_1*SAC30_i+\beta_2*SAC68_i\]
+\[Y_i \sim N(0,\sigma^2)\]
+\[i = 1:60\]
+
+## **Formato de comparación de medias**  
+\[E[Y_i]=\mu+\alpha_1\]
+\[Y_i \sim N(\mu_i,\sigma^2)\]
+\[i = 1:3\]
+
+- ¿Cuál es la variable respuesta? ¿Cuál es la variable explicatoria? ¿Cuál podría ser la potencial distribución de probabilidades de la variable respuesta?  
+
+VR: Tiempo de ingesta (seg).  
+VE: Cebo.  
+Potencial distribucion, Normal.  
+
+- Caracterice las muestras estadísticamente, con estadísticos de posición, dispersión y gráficos. ¿Cómo es la variabilidad en el tiempo de ingesta para cada tratamiento? ¿Qué tratamiento/s presentan mayor variabilidad? ¿Cuál/es menor?  
+```{r}
+library(psych)
+describeBy(horm$T_ing,horm$Tratamiento)
+boxplot(horm$T_ing~horm$Tratamiento,xlab="Tratamiento",ylab="t de ingesta (s)", col="orange"  )
+# Observe el grafico boxplot... que piensa que ocurrira con el supuesto de
+# homogeneidad de varianzas? 
+```
+
+```{r}
+#Relacion entre varianzas y valores esperados
+#calculo medias y varianzas, y las grafico
+media<-matrix(tapply(horm$T_ing,horm$Tratamiento, mean))
+var<-matrix(tapply(horm$T_ing,horm$Tratamiento, sd))
+(var<-var^2)
+Trat<-c("CC", "SAC30", "SAC68")
+plot(media, var, main="Relacion varianza - media", ylab="varianza")
+text(media, var, labels=Trat, cex= 0.7, pos=c(3,3,2))
+```  
+
+*Segun los resultados obtenidos, en el grafico de relacion varianza-media para cada tratamiento se puede observar que las variabilidades entre los mismos son diferentes. Ademas viendo el boxplot podemos concluir que los tratamientos que presentan mayor variabilidad son CC y SAC68, mientras que, el que presenta menor variabilidad es SAC30.* 
+
+- Plantee las hipótesis correspondientes.  
+
+*Ho*: El tiempo de ingesta del toxico es igual para todos los tratamientos  
+*Ha*: El tiempo de ingesta del toxico no es el mismo para todos los tratamientos  
+
+- Evalúe los supuestos.  
+```{r}
+modelo1<- lm(T_ing ~ Tratamiento, data=horm)
+summary(modelo1) # ¿Tiene sentido interpretar esta salida YA?
+anova(modelo1)
+
+e <- residuals(modelo1) # residuos
+re <- rstandard(modelo1) #residuos estandarizados
+pre <- predict(modelo1) #predichos
+
+# Graficamente
+par(mfrow = c(1,2)) # (Que hace este comando?)
+plot(pre, re, xlab = "Predichos", ylab = "Residuos estandarizados",
+main = "Grafico de dispersion de RE vs PRED")
+abline(0, 0)
+car::qqPlot(e)
+
+# Analíticamente
+e=modelo1$residuals
+shapiro.test(e)
+library(car)
+leveneTest(horm$T_ing, horm$Tratamiento, center="median")
+sum(e)
+```
+
+- Resuelva el modelo lineal utilizando la función gls().
+```{r}
+library("nlme") # para la función gls() necesitamos esta libreria
+modelo2<-gls(T_ing ~ Tratamiento, data=horm)
+anova(modelo2)
+plot(modelo2)
+# Calculo de los residuos de pearson:
+r2<-residuals(modelo2,type='pearson') #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred2<-fitted(modelo2)
+plot(pred2, r2, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+```  
+
+```{r}
+boxplot(r2~horm$Tratamiento,xlab="Tratamiento", ylab="Residuos estandarizados")
+qqnorm(modelo2, abline = c(0,1)) #QQ plot
+leveneTest(r2, horm$Tratamiento, center="median")
+```
+
+- Antes de continuar: ¿Qué diferencia/s existe entre las funciones lm() y gls()?
+
+*gls* realiza estimaciones utilizando maxima verosimilitud, mientras que *lm* utiliza minimos cuadrados.
+
+- Modele la varianza ¿Qué funciones podría utilizar para modelar la varianza?. Elija las funciones de varianza que considere adecuadas, corra los modelos con todas ellas y seleccione el mejor modelo.  
+```{r}
+modelo_varIdent<-gls(T_ing~Tratamiento, weights=varIdent(form=~1|Tratamiento), data=horm)
+anova(modelo_varIdent)
+summary(modelo_varIdent)
+
+r3<-residuals(modelo_varIdent,type="p") #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred3<-fitted(modelo_varIdent)
+plot(pred3, r3, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+boxplot(r3~horm$Tratamiento,xlab="Tratamiento", ylab="Residuos estandarizados")
+qqnorm(modelo_varIdent, abline = c(0,1)) #QQ plot
+leveneTest(r3, horm$Tratamiento, center="median")
+AIC(modelo2,modelo_varIdent)
+```
+
+```{r}
+modelo_varPower<-gls(T_ing~Tratamiento, weights=varPower(), data=horm)
+anova(modelo_varPower)
+summary(modelo_varPower)
+#Estudiamos los residuos
+r4<-residuals(modelo_varPower,type="p") #guardamos los residuos de Pearson = estandarizados
+pred4<-fitted(modelo_varPower)
+plot(pred4, r4, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+boxplot(r4~horm$Tratamiento,xlab="Tratamiento", ylab="Residuos estandarizados")
+qqnorm(modelo_varPower, abline = c(0,1)) #QQ plot
+leveneTest(r4, horm$Tratamiento, center="median")
+
+AIC(modelo2,modelo_varIdent,modelo_varPower)
+```
+```{r}
+#modelo 5 modelado varianzas con la fc "varExp"
+modelo_varExp<-gls(T_ing~Tratamiento, weights=varExp(), data=horm)
+anova(modelo_varExp) 
+summary(modelo_varExp)
+
+#Estudiamos los residuos
+r5<-residuals(modelo_varExp,type="p") #guardamos los residuos de Pearson = estandarizados
+pred5<-fitted(modelo_varExp)
+plot(pred5, r5, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+boxplot(r5~horm$Tratamiento,xlab="Tratamiento", ylab="Residuos estandarizados")
+qqnorm(modelo_varExp, abline = c(0,1)) #QQ plot
+leveneTest(r5, horm$Tratamiento, center="median")
+AIC(modelo2,modelo_varIdent,modelo_varPower,modelo_varExp)
+```  
+
+```{r}
+#Seleccionamos modelo
+summary(modelo_varPower)
+anova(modelo_varPower)
+```
+
+- Si corresponde, realice comparaciones.  
+```{r, echo=FALSE}
+library("emmeans")
+multCompTukey <- emmeans(modelo_varPower, pairwise ~ Tratamiento)
+summary(multCompTukey)
+confint(multCompTukey)
+plot(multCompTukey$emmeans, comparisons = TRUE)
+```
+
+- Concluya e Informe sus resultados presentado un gráfico con epígrafe.
+```{r}
+resumen_modelo <-as.data.frame(multCompTukey$emmeans)
+df_niveles <- data.frame(x = rep(c("CC","SAC30","SAC68"),each=1), y=650, label = c("B","A","B"))
+ggplot(resumen_modelo, aes(x=Tratamiento, y=emmean)) +
+        labs(x="Tratamiento") + labs(y="Tiempo ingesta [seg]") +
+        geom_errorbar(aes(ymin=emmean-SE, ymax=emmean+SE), color="blue", width=0.2)+
+        geom_point(shape=1, size=2, color="blue") +
+        ggtitle("Comparaciones", "Media ± Error estándar") +
+        geom_text(data = df_niveles, aes(x = x, y = y, label = label),position = position_dodge(width = .9))
+```  
+
+Tiempo de ingesta observado en función del tratamiento.  
+
+Un análisis de la varianza a partir de un modelo lineal general modelando heterocedasticidad, evidencia diferencias significativas entre los tratamientos (F2,57=102, p<0.05). Letras indican diferencias entre grupos detectadas a través de comparaciones a posteriori (Tukey, p < 0.05). 
+  
+## Problema 2. Efecto de la fracción lipoproteica HDL sobre la progresión de las lesiones ateroescleróticas en conejos alimentados con dieta rica en colesterol  
+
+Badimon y cols (J.Clin.Invest 85: 1234, 1990) llevaron a cabo un estudio a fin de determinar el efecto de la fracción lipoproteica HDL-VHDL sobre lesiones ateroscleróticas en conejos Nueva Zelanda. La aterosclerosis fue inducida por la alimentación de los animales con una dieta rica en colesterol 0,5% durante 60 días (Dieta 1). Otro grupo de animales fueron mantenidos con la misma dieta durante 90 días (Dieta 2). Un tercer grupo se alimentó con la misma dieta durante 90 días, pero recibió 50 mg de proteína HDL-VHDL por semana durante los últimos 30 días (Dieta 3). Al finalizar el ensayo los animales fueron sacrificados. En todos los casos se comprobaron lesiones aterógenicas en aorta. Se midió el contenido de colesterol en aorta (en mg/g). Los datos se encuentran en el archivo colesterol.txt
+1. Identifique la variable respuesta y explicatoria. ¿Cuál es el diseño experimental? ¿Cuál es la cantidad de réplicas?
+2. Escriba el modelo en parámetros y en términos del problema.
+3. Concluya en relación al efecto de la dieta rica en colesterol y la suministración adicional de la proteína HDL-VHDL. Igual que antes, antes de efectuar las pruebas analice los supuestos del modelo.
+4. Resuelva el problema estimando las SC por mínimos cuadrados (enfoque “clásico”, función lm() ó aov()) y compare los resultados obtenidos.
+
+## Problema 3. Exposición prenatal a mercurio y actividad de la bomba de calcio
+
+Si bien los efectos neurotóxicos de la exposición prenatal a altas dosis de mercurio están bien establecidos, poco se sabe sobre los efectos de la exposición prenatal a niveles por debajo de 10 ppm. Algunos autores han reportado deficiencias neuroconductuales sutiles, especialmente con respecto al lenguaje, atención y memoria. Se sospecha que estos efectos pueden estar mediados por la desregulación de la homeostasis del Ca a través de la inhibición de la bomba de Ca-ATPasa de la membrana plasmática. Se llevó a cabo un estudio en una maternidad a fin de determinar si la exposición materna al mercurio medida por los depósitos de mercurio en el cabello (en µg/g) se relacionaba con  la actividad de la bomba de Ca del recién nacido (nmol/mg /hr). Para ello se seleccionaron 75 recién nacidos y sus madres. Se tomaron muestras de pelo de 3 cm desde la raíz. El cabello promedio crece aproximadamente 1 cm por mes, por lo que las muestras de cabello recogidas reflejaron las exposiciones durante los 3-4 meses previos al parto. La actividad de la bomba de Ca se midió en glóbulos rojos de sangre de cordón umbilical de los recién nacidos. Los datos en archivo pelo.txt.  
+
+1- Represente los datos en un diagrama de dispersión. ¿Parece que existe una tendencia lineal en los datos? ¿Directa o inversa? ¿Débil o fuerte? 
+```{r}
+library(ggplot2)
+library(nlme)
+datos=read.delim("/home/jose/Documents/materias/biome2/2018/tps/tp3/pelo.txt",header=T,sep="\t")
+colnames(datos)=c("id","Hg_pelo","act_bomba")
+attach(datos)
+head(datos)
+str(datos)
+ggplot(datos,aes(x=Hg_pelo,y=act_bomba))+
+geom_point(aes(), colour ="deepskyblue", size=2)
+```
+
+2- Estime la relación funcional. Interprete la pendiente en contexto. ¿Cuáles son sus unidades?
+```{r}
+modelo1 <- lm(act_bomba ~ Hg_pelo, datos)
+#supuestos
+e1=modelo1$residuals
+shapiro.test(e1)
+pred1<-fitted(modelo1)
+sup.mod1=as.data.frame(cbind(e1,pred1))
+ggplot(sup.mod1,aes(x=pred1,y=e1))+  geom_point(aes(), colour ="deepskyblue", size=2)
+par(mfrow=c(1,2))
+plot(modelo1,which=c(1,3))
+sum(e1)
+```
+
+3- ¿Existe evidencia significativa de que la actividad basal de la bomba de Ca en el recién nacido disminuye linealmente con el nivel de mercurio en pelo materno?  
+```{r}
+################################################
+#Vamos a modelar
+modelo_varFixed1<-gls(act_bomba ~ Hg_pelo, weights=varFixed(~Hg_pelo),data=datos)
+# Calculo de los residuos de pearson:
+r2<-residuals(modelo_varFixed1,type="p") #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred2<-fitted(modelo_varFixed1)
+plot(pred2, r2, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(modelo_varFixed1, abline = c(0,1)) #QQ plot
+anova(modelo_varFixed1)
+plot(modelo_varFixed1)
+shapiro.test(r2)
+###################
+##################
+modelo_varFixed2<-gls(act_bomba ~ Hg_pelo, weights=varFixed(~1/Hg_pelo),data=datos)
+# Calculo de los residuos de pearson:
+r3<-residuals(modelo_varFixed2,type="p") #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred3<-fitted(modelo_varFixed2)
+plot(pred3, r3, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(modelo_varFixed2, abline = c(0,1)) #QQ plot
+anova(modelo_varFixed2)
+plot(modelo_varFixed2)
+shapiro.test(r3)
+######################
+######################
+modelo_varPower<-gls(act_bomba ~ Hg_pelo, weights=varPower(),data=datos)
+# Calculo de los residuos de pearson:
+r4<-residuals(modelo_varPower,type="p") #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred4<-fitted(modelo_varPower)
+plot(pred4, r4, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(modelo_varPower, abline = c(0,1)) #QQ plot
+anova(modelo_varPower)
+plot(modelo_varPower)
+shapiro.test(r4)
+
+######################
+######################
+modelo_varExp<-gls(act_bomba ~ Hg_pelo, weights=varExp(),data=datos)
+# Calculo de los residuos de pearson:
+r5<-residuals(modelo_varExp,type="p") #guardamos los residuos de Pearson = estandarizados
+# Calculo de los valores predichos por el modelo:
+pred5<-fitted(modelo_varExp)
+plot(pred5, r5, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(modelo_varExp, abline = c(0,1)) #QQ plot
+anova(modelo_varExp)
+plot(modelo_varExp)
+shapiro.test(r5)
+
+AIC(modelo_varFixed1,modelo_varFixed2,modelo_varPower,modelo_varExp)
+summary(modelo_varPower)
+#prueba de los residuos corregidos
+e<-residuals(modelo_varPower,type="p") # residuos
+pre<-fitted(modelo_varPower) #predichos
+res<-cbind(datos$act_bomba, datos$Hg_pelo,pre,e)
+colnames(res)<-c("bomba", "hg","Predichos", "Residuos") 
+head(res)
+```
+
+Recordar que los residuos en varPower se calculan como:
+\[e_{ij}=y_{ij}-y^{\wedge}_{ij}/\sqrt(RSE*|y^{\wedge}_i|^{2*power)}\]
+
+Entonces:
+
+```{r}
+head(res)
+a=2136.09-1728.257
+b=(0.5849745^2)*(1728.257^(2*0.9215103))
+a/sqrt(b)
+res[1,]
+```
+
+4- Sobre la base de su respuesta en (3) y el diseño de este estudio, ¿qué puede decir con respecto a la pregunta de investigación sobre si la exposición materna al mercurio medida por depósitos de mercurio en cabello afecta la actividad de la bomba de Ca en recién nacidos?
+
+

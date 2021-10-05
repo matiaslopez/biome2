@@ -1,0 +1,105 @@
+individuo	tratamiento	tiempo	t_reac
+1	cafeina	inicial	1.2
+2	cafeina	inicial	3
+3	cafeina	inicial	1.8
+4	cafeina	inicial	6.1
+5	cafeina	inicial	7.8
+6	cafeina	inicial	4.8
+7	cafeina	inicial	9.9
+8	cafeina	inicial	9.2
+9	cafeina	inicial	0
+10	cafeina	inicial	7.8
+11	cafeina	inicial	0.9
+12	cafeina	inicial	9
+13	cafeina	inicial	8.1
+14	placebo	inicial	5
+15	placebo	inicial	5.1
+16	placebo	inicial	1
+17	placebo	inicial	16.6
+18	placebo	inicial	15.1
+19	placebo	inicial	7.62
+20	placebo	inicial	0.3
+21	placebo	inicial	1.3
+22	placebo	inicial	11.6
+23	placebo	inicial	7.1
+24	placebo	inicial	12.7
+25	placebo	inicial	2.6
+26	placebo	inicial	15.7
+1	cafeina	dia 1	2.8
+2	cafeina	dia 1	8
+3	cafeina	dia 1	10.4
+4	cafeina	dia 1	15.8
+5	cafeina	dia 1	8.3
+6	cafeina	dia 1	5.6
+7	cafeina	dia 1	8
+8	cafeina	dia 1	6.6
+9	cafeina	dia 1	14.1
+10	cafeina	dia 1	9.3
+11	cafeina	dia 1	4.6
+12	cafeina	dia 1	13
+13	cafeina	dia 1	5.5
+14	placebo	dia 1	9.3
+15	placebo	dia 1	15.6
+16	placebo	dia 1	10.9
+17	placebo	dia 1	25.1
+18	placebo	dia 1	22
+19	placebo	dia 1	20.5
+20	placebo	dia 1	14.5
+21	placebo	dia 1	18.1
+22	placebo	dia 1	23.9
+23	placebo	dia 1	22.1
+24	placebo	dia 1	22
+25	placebo	dia 1	11.9
+26	placebo	dia 1	21.4
+1	cafeina	dia 2	23
+2	cafeina	dia 2	19.1
+3	cafeina	dia 2	9.9
+4	cafeina	dia 2	18
+5	cafeina	dia 2	13.6
+6	cafeina	dia 2	19.9
+7	cafeina	dia 2	11.4
+8	cafeina	dia 2	19.6
+9	cafeina	dia 2	20.3
+10	cafeina	dia 2	8
+11	cafeina	dia 2	9.7
+12	cafeina	dia 2	16.7
+13	cafeina	dia 2	12
+14	placebo	dia 2	21.9
+15	placebo	dia 2	23.6
+16	placebo	dia 2	18.3
+17	placebo	dia 2	31.7
+18	placebo	dia 2	28.7
+19	placebo	dia 2	22.82
+20	placebo	dia 2	19.1
+21	placebo	dia 2	20.3
+22	placebo	dia 2	26.9
+23	placebo	dia 2	27
+24	placebo	dia 2	18.6
+25	placebo	dia 2	25.7
+26	placebo	dia 2	19.7
+1	cafeina	dia 3	25.3
+2	cafeina	dia 3	21.9
+3	cafeina	dia 3	25.9
+4	cafeina	dia 3	18.1
+5	cafeina	dia 3	23.7
+6	cafeina	dia 3	24.4
+7	cafeina	dia 3	15.4
+8	cafeina	dia 3	20.3
+9	cafeina	dia 3	20.4
+10	cafeina	dia 3	13.7
+11	cafeina	dia 3	13.6
+12	cafeina	dia 3	13.4
+13	cafeina	dia 3	15
+14	placebo	dia 3	21.7
+15	placebo	dia 3	22.9
+16	placebo	dia 3	23
+17	placebo	dia 3	30.1
+18	placebo	dia 3	32.3
+19	placebo	dia 3	20.9
+20	placebo	dia 3	20.6
+21	placebo	dia 3	22.3
+22	placebo	dia 3	29.9
+23	placebo	dia 3	27.9
+24	placebo	dia 3	20
+25	placebo	dia 3	26.1
+26	placebo	dia 3	24.1

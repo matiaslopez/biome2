@@ -1,0 +1,915 @@
+---
+title: "Biometria II  \nTP Nº 2  \n Modelos Lineales (Regresion Lineal Simple)"
+output: pdf_document
+latex_engine: pdflatex
+font-family: Arial
+documentclass: article
+geometry: margin=1.5cm
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE,size=10, tidy=TRUE, tidy.opts=list(width.cutoff=65))
+```
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+## Objetivos
+
+\begin{enumerate}
+\item Interpretación de modelos lineales con variables cuanti- y cualitativas
+\item Análisis de Supuestos en modelos lineales generales
+\item Ejecutar e interpretar simulaciones de modelos y distribuciones en R
+\end{enumerate}
+
+## Hoja de ruta
+
+\begin{itemize}
+\item Ejercicio guiado (script) para resolver (Problema 1)
+\item Ejercicio adicional sin script (Problema 2)
+\item Ejericio de simulación distribución normal y modelos lineales
+\end {itemize}
+
+\section[]{Parte A: EJERCICIOS}
+
+## Problema 1. Fitorremediación en plantas
+
+La fitorremediación es el proceso a través del cual algunas especies de plantas que son tolerantes a los metales pesados, los acumulan en sus órganos disminuyendo así su concentración en el ambiente que habitan. Para evaluar la capacidad fitorremediadora de la especie herbácea *Thlaspi caerulescens* se realizó un experimento en el cual se pusieron a crecer plántulas de esta especie en 32 frascos con medio de cultivo Hoagland a los que se le agregaron al azar distintas concentraciones de cadmio (de 0 a 500 $\mu$M). Luego de 14 días se cosecharon las plantas y se midió la concentración de Cd acumulada en tallos [mg.kg \textsuperscript{-1} )], obteniéndose los resultados que se encuentran en el archivo *cadmio.txt*. Para este experimento:
+
+1) Indique la cantidad de replicas y el tipo de variables involucradas.  
+```{r}
+wd<-getwd()
+cadmio=read.table("/home/jose/Documents/materias/biome2/2020/tps/tp2/clase/Cadmio.txt",header=T)
+# opcional:
+attach(cadmio)
+```
+
+```{r}
+# inspeccion del data.frame
+class(cadmio)
+str(cadmio)
+dim(cadmio)
+head(cadmio)
+tail(cadmio)
+
+#cantidad de replicas
+table(cadmio$Cd)
+```
+
+```{r}
+#Una manera alternativa de hacerlo
+res=c()
+for (i in 1:length(levels(as.factor(cadmio$Cd)))){
+  res=c(res,nrow(cadmio[cadmio$Cd==levels(as.factor(cadmio$Cd)[i]),]))
+}
+res
+```
+
+2) Describa grafica y estadisticamente los datos. (*Ayuda: tapply, summary y stat.esc)*
+```{r}
+# graficos
+#R base
+plot(cadmio, ylab = "cadmio acumulado", xlab = "cadmio agregado")
+
+# ggplot2b
+library(ggplot2)
+disp <- ggplot(cadmio, aes(x=Cd, y=Cdenplanta)) + 
+  geom_point(size=2, color="red", shape=19) +  
+  geom_smooth(method=lm, se=F, fullrange=F, size=0.5,color="blue")+ 
+  xlab("Conc. Cd suministrada") +  ylab("Cd tallo (mg/g MS)") 
+disp
+```
+
+```{r}
+# resumen descriptiva
+summary(cadmio)
+```
+
+
+¿Que hace la funcion *tapply*?  
+*tapply* toma como argumentos (X,INDEX,FUN)  
+-La funcion *tapply* aplica (de ahi parte de su nombre) una funcion (FUN) a un vector (X) agrupado para cada factor definido en INDEX. En este caso, queremos que para cada valor de la categoria "Cd", aplique *summary* sobre el vector "Cdenplanta".  
+
+```{r}
+library(pastecs)
+tapply(Cdenplanta, Cd, summary) 
+tapply(Cdenplanta, Cd, stat.desc)
+```
+```{r}
+plot(cadmio, ylab = "cadmio acumulado", xlab = "cadmio agregado")
+plot(as.factor(Cd), Cdenplanta, ylab = "cadmio acumulado", xlab = "cadmio agregado")
+```
+
+3) Analice como se modifica la concentracion de cadmio absorbida por las plantas en relacion a la concentracion de cadmio ambiental. Plantee el modelo, compruebe los supuestos.
+
+$$[CdAcumTallos]_{(mg/kg)i}=\beta_0+\beta_{1}*[Cd Suministrada]_{(mg/kg*\mu M)i}|+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma)$$
+$$i = 1: n (32)$$
+
+```{r}
+Modelo_Cdcuant <- lm(Cdenplanta ~ Cd, cadmio)
+```
+
+```{r}
+#Calculamos los residuos y los predichos
+e<-residuals(Modelo_Cdcuant) # residuos
+re<-rstandard(Modelo_Cdcuant) #residuos estandarizados
+pre<-predict(Modelo_Cdcuant) #predichos
+res<-cbind(cadmio$Cd,cadmio$Cdenplanta,pre,e,round(re,2))
+colnames(res)<-c("dosis Cd", "Cd tallo", "Predichos", "Residuos", "residuos std") 
+head(res)
+
+#Graficamos residuos en el scatter plot
+ggplot(cadmio, aes(x = Cd, y = Cdenplanta)) +
+geom_smooth(method = "lm", se = FALSE, color = "blue") +
+geom_segment(aes(xend = Cd, yend = pre)) +
+geom_point(aes(), colour ="deepskyblue", size=2) +
+geom_point(aes(y = pre), shape = 1) +
+xlab("Concentracion Cd (mg/kg suelo)") +  ylab("Cd en tallo (mg/g MS)") +  ggtitle("")
+
+#Supuestos modelo
+res<-as.data.frame(res)
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(e)
+qqline(e)
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(Modelo_Cdcuant, which=c(1,2))
+par(mfrow = c(1, 1))
+shapiro.test(e)
+```
+
+4) ¿Considera que se puede proponer a *Thlaspi caerulescens* como un agente fitorremediador?. Justifique.
+```{r}
+summary(Modelo_Cdcuant)
+confint(Modelo_Cdcuant)
+```
+  
+*Si, porque por cada $\mu$M de concentracion de cadmio que se suministra se espera que el aumento en el cadmio acumulado por tallo se encuentre entre 0,62 y 0,69 \(_{mg/kg}\) de cadmio con una confianza del 95%.*
+
+5) Analice como se modifica la concentracion de cadmio absorbida por las plantas en relación a la concentración de cadmio ambiental, pero ahora considerando al cadmio ambiental como una **variable categorica**. Plantee el nuevo modelo, compruebe los supuestos e interprete los resultados obtenidos.
+
+
+$$[CdAcumTallos]_{(mg/kg)i}=\beta_0+\beta_1*[10]_{(mg/kg)}+\beta_2*[25]_{(mg/kg)}+\beta_3*[50]_{(mg/kg)}+\beta_4*[100]_{(mg/kg)}+\beta_5*[200]_{(mg/kg)}\]\[+\beta_6*[300]_{(mg/kg)}+\beta_7*[500]_{(mg/kg)}+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma)$$
+$$i = 1: n (32)$$
+
+
+```{r}
+# Pasamos la variable explicatoria (continua) a una variable categórica
+Cdfactor<-as.factor(Cd) #crean el objeto aparte... tambien se puede aplicar la funcion as.factor 
+#en el modelo
+levels(Cdfactor) # devuelve los niveles del factor
+```
+
+```{r}
+# graficos exploratorios
+box <- ggplot(cadmio, aes(x=Cdfactor, y=Cdenplanta)) +
+  geom_boxplot(aes(color=Cdfactor), color="black")+
+  theme_bw()+
+  geom_jitter(alpha=0.3, size=2,aes(color=Cdfactor), position = position_jitter(width = .2))+theme(legend.position="top", legend.text=element_text(size = 14),legend.title = element_text(size=16, face="bold")) +
+  ylab("Cd en planta")+xlab("Cd")
+box
+```
+```{r}
+Modelo_CdFactor <- lm(Cdenplanta ~ Cdfactor, cadmio)
+# Supuestos
+# residuos 
+eFac <- residuals.lm(Modelo_CdFactor)
+reFac<-rstandard(Modelo_CdFactor) #residuos estandarizados
+preFac<-predict(Modelo_CdFactor) #predichos
+resFac<-cbind(cadmio$Cd,cadmio$Cdenplanta,eFac,reFac,preFac)
+colnames(resFac)<-c("Dosis Cd", "Cd tallo", "Residuos", "Residuos Std","Predichos") 
+head(resFac)
+shapiro.test(eFac)
+```
+
+```{r}
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+```
+
+## $\bullet$ Homogeneidad de varianza. Prueba de Levene
+
+¿Por qué antes no pudimos hacer esta prueba?  
+*Porque esta prueba se utiliza cuando tenemos predictoras categoricas.*
+```{r}
+library(car)
+leveneTest(Modelo_CdFactor)
+```
+
+## $\bullet$ Vemos el resumen del modelo
+
+```{r}
+summary(Modelo_CdFactor)
+```
+
+## $\bullet$ Magnitud del Efecto
+
+¿Cómo se evalúa la magnitud del efecto cuando la variable es un factor? 
+*Comparaciones múltiples a posteriori. Por ej. Test de Tukey*
+
+Investigue en google qué funciones puede utilizar para realizarlo.
+
+```{r}
+#Hacemos la comparacion con emmeans que es como lo vamos a hacer en la materia.
+library(emmeans)
+options(emmeans = list(emmeans = list(infer = c(FALSE, TRUE)),contrast = list(infer = c(TRUE, FALSE))))
+TukeyEmmeans<-emmeans(Modelo_CdFactor, pairwise ~ Cdfactor)
+TukeyEmmeans
+```
+```{r}
+plot(TukeyEmmeans$contrasts,comparisons=TRUE)
+```
+
+6) Discuta ventajas, desventajas y alcances de cada aproximacion (predictora cuantitativa o cualitativa).  
+
+*Tipo de pregunta que responde.*
+
+*Cuanti. Existe una relacion lineal entre la var. resp y la var. expliactoria?*
+*Cuali. Hay una relación entre la var. resp y los niveles de la var. explicatoria?*
+
+*Relación Y vs X: *
+*Cuanti. Linealidad de la respuesta*
+*Cuali. No implica linealidad de la respuesta.*
+
+*Potencia: Tomando la misma variable cualitativa en vez de cuanti se pierden muchos grados de libertad, y por ende potencia en la prueba estadística.*
+
+*Predicciones: Como var. cont. podés interpolar en el rango estudiado, cuando la variable es cuali no se puede*
+
+
+7) Pronostique por ambos modelos la concentración de cadmio absorbida por las plantas de *Thlaspi caerulescens* sometidas a 500 $\mu$M de cadmio. ¿Podría predecir la respuesta esperada a 450 $\mu$M? ¿Y si la concentración de cadmio ambiental supera los 600 $\mu$M?   
+
+## $\bullet$ Predicciones
+
+```{r}
+#Cd=500 con cadmio como continua y cadmio como factor.
+new <-data.frame(Cd=c(500))
+predict.lm(Modelo_Cdcuant,new)
+
+#Cd=450.
+new <-data.frame(Cd=c(450))
+predict.lm(Modelo_Cdcuant,new)
+
+# revisen:
+#Haciendo la cuenta rapidamente para 450
+coefficients(Modelo_Cdcuant)
+(y=420.81+0.66*450)
+
+#Haciendo la cuenta exacta para 450
+coefficients(Modelo_Cdcuant)[2]*450+coefficients(Modelo_Cdcuant)[1]
+```
+
+¿Se puede hacer para ambos modelos? No. ¿Por qué? *Porque con Cd como factor no puedo interpolar.*
+
+Cd=600. ¡FUERA DE RANGO!
+
+## Problema 2. Frontera agropecuaria y uso de plaguicidas
+
+El aumento de la frontera agropecuaria y el uso de plaguicidas en la Argentina es un proceso del que aún se desconocen sus consecuencias sobre las comunidades de flora y fauna nativas. Poletta y colaboradores (2009) realizaron un trabajo cuyo objetivo fue evaluar la potencial genotoxicidad del herbicida más comúnmente utilizado, Round up (RU: glifosato), sobre eritrocitos del yacaré overo *Caiman latirostris*, luego de haber sido expuestos in ovo.Para ello embriones del yacaré fueron expuestos en estadios tempranos a concentraciones no letales del herbicida entre cero y 1750 $\mu$g/huevo. Al momento de la eclosión se tomaron muestras de sangre y se calculó el daño en el ADN mediante un índice de daño (ID). Las dosis aplicadas fueron asignadas al azar a 18 grupos de 5 huevos cada uno. Los resultados se encuentran en el archivo *Ru.txt*.  
+
+1) Indique de qué tipo de estudio se trata, la cantidad de réplicas y el tipo de variables involucradas.  
+
+Estudio experimental.  
+UE: Grupo de 5 huevos.  
+Tratamientos: 6 (concentraciones no letales de herbicida 0, 500, 750, 1000, 1250, 1750).  
+Replicas: 3 (se colocaron a 3 grupos con 5 huevos en cada concentración de herbicida).  
+VR: Indice de daño (ID). (cuantitativa, continua) (??).  
+VE: Concentración no letal de herbicida en $\mu$g/huevo. (cuantitativa continua (numerica)/ cualitativa (factor)).  
+
+2) Describa gráfica y estadísticamente los datos.  
+
+$$ID_i=\beta_0+\beta_1*RU[500]_{(\mu g/huevo)}+\beta_2*RU[750]_{(\mu g/huevo)}+\beta_3*RU[1000]_{(\mu g/huevo)}+\beta_4*RU[1250]_{(\mu g/huevo)}+\beta_5*RU[1750]_{(\mu g/huevo)}\]\[+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma)$$
+$$i = 1: 18$$
+
+
+```{r}
+ru=read.table("/home/jose/Documents/materias/biome2/2019/tps/tp2/clase/Ru.txt",header=TRUE)
+ru$RU=as.factor(ru$RU)
+(box <- ggplot(ru, aes(x = RU, y = ID)) +geom_boxplot(aes(color=RU))+ theme_bw() + geom_point()+ylab("concentracion") + xlab("grupo"))
+```
+
+Estadística de datos separados por concentración de herbicida
+
+```{r,echo=FALSE}
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+    library(plyr)
+    # New version of length which can handle NA's: if na.rm==T, don't count them
+    length2 <- function (x, na.rm=FALSE) {
+        if (na.rm) sum(!is.na(x))
+        else       length(x)
+    }
+    # This does the summary. For each group's data frame, return a vector with
+    # N, mean, and sd
+    datac <- ddply(data, groupvars, .drop=.drop,
+      .fun = function(xx, col) {
+        c(N    = length2(xx[[col]], na.rm=na.rm),
+          mean = mean   (xx[[col]], na.rm=na.rm),
+          sd   = sd     (xx[[col]], na.rm=na.rm)
+        )
+      },
+      measurevar
+    )
+
+    # Rename the "mean" column    
+    datac <- rename(datac, c("mean" = measurevar))
+
+    datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+    # Confidence interval multiplier for standard error
+    # Calculate t-statistic for confidence interval: 
+    # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+    ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+    datac$ci <- datac$se * ciMult
+    return(datac)
+}
+```
+
+```{r}
+summarySE(ru, measurevar =  "ID", groupvar=c("RU"),na.rm = TRUE)
+```
+
+3) Analice el daño sobre el ADN en función de la concentración del herbicida. Plantee el/los modelo/s,
+compruebe los supuestos. Realice este procedimiento con la función *lm()*. Primero, considerando a la variable RU[$\mu$g/huevo] como *factor*. Luego, considerando a la variable RU[$\mu$g/huevo] como *numérica*.
+
+```{r}
+mod1=lm(ru$ID~ru$RU,data=ru)
+
+e<-residuals(mod1) # residuos
+re<-rstandard(mod1) #residuos estandarizados
+pre<-predict(mod1) #predichos
+res<-data.frame(ru$RU,ru$ID,pre,e,round(re,2))
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(e)
+qqline(e)
+par(mfrow = c(1, 1))
+shapiro.test(e)
+```
+
+```{r}
+summary(mod1)
+anova(mod1)
+pval <- anova(mod1)$"Pr(>F)"[1]
+```
+
+```{r}
+library(emmeans)
+(comp <- emmeans(mod1,pairwise~RU))
+plot(comp$contrasts,comparisons=TRUE)
+```
+
+```{r}
+#como numerica.
+ru2=read.table("/home/jose/Documents/materias/biome2/2019/tps/tp2/clase/Ru.txt",header=TRUE)
+
+mod2=lm(ru2$ID~ru2$RU,data=ru2)
+e<-residuals(mod2) # residuos
+re<-rstandard(mod2) #residuos estandarizados
+pre<-predict(mod2) #predichos
+res<-data.frame(ru2$RU,ru2$ID,pre,e,round(re,2))
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+qqnorm(e)
+qqline(e)
+par(mfrow = c(1, 1))
+shapiro.test(e)
+```
+
+```{r}
+summary(mod2)
+anova(mod2)
+```
+
+4) Interprete cada salida en función del modelo planteado. Compare los resultados, discuta ventajas,
+desventajas y alcances de cada enfoque.  
+
+En el primer caso tomamos a la VE como cualitativa, es decir que estamos considerando un modelo de comparación de medias. El valor *p-valor* `r pval` indica que al menos una de las medias difiere significativamente de las demás. *b0* indica el valor estimado para el nivel de la VE que quedo de referencia (en este caso, nivel 0 $\mu$g/huevo). Despues hay 5 variables dummies, cuyo estimador indica cuánto se aleja la media del valor de la media de referencia, en unidades de la VR. Para saber cuántas medias difieren significativamente preciso realizar alguna prueba de contrastes a posteriori.  
+
+En el segundo caso tomamos a la VE como cuantitativa, realizando un modelo de regresión. La prueba para la pendiente es significativa, por lo que rechazamos que el efecto de RU sobre ID sea nulo. En este caso solo tengo *b0* y *b1*. *b0* es el valor estimado para la VR cuando la VE equivale a 0. *b1* es la pendiente que describe la relacion lineal entre la variable respuesta y variable explicatoria. Especificamente, *b1* indica cuánto cambia el índice de daño por cambio unitario en RU.  
+
+Si dejamos la VE como cuantitativa, tiene ventajas en términos de la parsimonia (menos parámetros estimados) y en la capacidad de interpolación. Lo que hacemos con el analisis es describir una relacion funcional entre las variables respuesta y explicatoria, que representa con una pendiente cuánto varia la primera en funcion del cambio unitario en la segunda. De esta manera, dentro del rango estudiado, uno puede interpolar valores predichos para la variable respuesta a valores de la VE que no hayan sido contemplados en el expermento.  
+
+Cómo utilizo a la VE depende mucho de la pregunta de investigación, Me interesa comparar esos grupos, saber si cada nivel induce una respuesta distinta en el ID? O me interesa más bien un modelo que describa cómo varía la VR en función de la VE?. Si la pregunta es relativamente ambigua, en general se elije usar la VE como cuantitativa, ya que es más informativa (permite interpolar) y más parsimoniosa (siempre dos parámetros, *b0* y *b1* más allá del número de x evaluados).  
+
+Si la relación entre VR y VE cuantitativa no es clara, o quizás si tengo evaluados pocos niveles de la VE cuantitativa podría convenir más tratar a la VE como categórica.  
+
+5) ¿Cuál es el porcentaje de variabilidad en el ID que está explicado por la concentración del herbicida?.
+
+```{r}
+rcuali<-round(summary(mod1)$r.squared*100,2)
+rcuanti<-round(summary(mod2)$r.squared*100,2)
+```
+
+El porcentaje de variabilidad en el ID que está explicado por la concentración del herbicida para el modelo que utiliza a la VE como cualitativa es de `r rcuali`%. Por otra parte, el porcentaje de variabilidad en el ID que está explicado por la concentración del herbicida para el modelo que utiliza a la VE como cuantitativa es de `r rcuanti`%.  
+
+6) ¿Podría predecir el ID a una concentración de RU de 1500 $\mu$g/huevo? ¿y de 2200 $\mu$g/huevo?  
+
+Podemos predecir valores de ID a niveles de la VE no evaluados en el diseño experimental sólo si la VE es cuantitativa y sólo si dicho valor se encuentra en el rango de valores puesto a prueba en el ensayo. No conocemos el compartamiento de ID fuera de ese rango, por lo que no es correcto extrapolar.
+
+```{r}
+#vamos a armar una funcion para predecir esos datos
+#suponemos que los datos son unicos y ya estan cargados
+datos=read.table("/home/jose/Documents/materias/biome2/2019/tps/tp2/clase/Ru.txt",header=TRUE)
+prediccion <- function(valor,bd){
+  mod = lm(bd$ID~bd$RU,data=bd)
+  b0 = mod$coefficients[1]
+  b1 = mod$coefficients[2]
+  res = (b1 * valor) + b0
+  return (res)
+}
+
+```{r}
+prediccion(valor=1500,bd=datos)
+```
+
+```{r}
+#otra manera mucho mas sencilla
+mod2
+#importante: la variable a ingresar debe llamarse como en el call
+newVal = ref_grid(mod2, at = list('ru2$RU' = 1500))
+predict(newVal)
+```
+
+\section[]{PARTE B: CARACTERIZACION DE LA DISTRIBUCION NORMAL}
+
+\subsection[]{B.1 Distribucion normal y funciones de R}
+
+Comenzaremos con la distribucion normal y la utilizaremos como ejemplo para aprender las funciones de R asociadas al manejo de distribuciones de probabilidad.
+
+\subsection{Funciones}
+
+Las funciones que veremos son comunes a todas las distribuciones de probabilidad. Hay cuatro tipos de funciones, que estan determinados por la letra con la que comienzan. Seguido a esta letra se encuentra la abreviatura de la distribucion.
+
+$\bullet$ Distribucion normal: `norm'.  
+
+$\bullet$ Distribucion binomial: `binom'. 
+
+$\bullet$ Distribucion binomial negativa: `nbinom'.  
+
+$\bullet$ Distribucion de Poisson: `pois'.
+
+## dXXX
+
+La primera funcion que veremos es *dnorm()*. Esta funcion calcula la densidad de probabilidad de la distribucion para un valor particular de la variable, o para un vector de valores. Esto nos permite por ejemplo graficar la distribucion.
+
+```{r}
+#X es el punto en el que se desea calcular la densidad, mean es la media (parametro mu) y sd es el Desvio estandar (parametro sigma).
+dnorm(x = 0,    
+      mean = 0, 
+      sd = 1)   
+```
+El valor obtenido NO es la probabilidad de que la variable tome valor 0. Si queremos graficar la funcion, podrias hacer lo siguiente:
+
+$\bullet$ Creamos un objeto para los valores de la funcion. En caso de dudas, consultar *?seq()*.
+
+```{r}
+(valores_x <- seq(-4, 4, by = 0.5))
+(valores_y <- dnorm(x = seq(-4, 4, by = 0.5), mean = 0, sd = 1))
+```
+$\bullet$ Graficamos.
+
+```{r}
+plot(x = valores_x,                        
+     y = valores_y,
+     main = "Distribucion normal; media = 0, sd = 1")
+```
+
+Prueben achicar el valor del argumento *by* de la funcion *seq()*.  
+Si especificamos que el plot sea *type = "l"*, se creara una linea uniendo los puntos que le proveamos.
+
+```{r}
+plot(x = valores_x,
+     y = valores_y,
+     type = "l",                        
+     main = "Distribucion normal; media = 0, sd = 1",
+     xlab = "X",                        
+     ylab = "Densidad de probabilidad") 
+```
+
+Existen formas mas elegantes de hacer este tipo de graficos...
+
+```{r}
+grafico <- ggplot(data.frame(x = c(-4, 4)), aes(x)) +
+  stat_function(fun = dnorm,
+                args = list("mean" = 0, "sd" = 1),
+                geom = "area",
+                fill = "skyblue",
+                colour = "black",
+                lwd = 1.1) +
+  ggtitle("Distribucion normal") +
+  xlab("X") +  
+  ylab("Densidad de probabilidad") +
+  theme_bw()
+grafico
+```
+
+ ...pero se escapan de lo que queremos ver hoy.
+
+## pXXX
+
+La siguente funcion que veremos es *pnorm()*. Esta funcion devuelve la probabilidad acumulada hasta el valor del argumento *q*. Al tratarse de una distribucion de probabilidad continua, esta probabilidad es la integral de la curva que se genera con *dnorm()*, entre -inf y el valor de 'q'. Si fuese una distribucion discreta, seria la sumatoria.
+
+$\bullet$ Hagamos algunos calculos,
+
+```{r}
+#Calculamos la probabilidad acumulada hasta x = 0.
+pnorm(q = 0, mean = 0, sd = 1)
+# Probabilidad acumulada dentro de dos desvios estandard centrales.
+pnorm(q = 2, mean = 0, sd = 1) - pnorm(q = -2, mean = 0, sd = 1)
+```
+
+## qXXX
+
+La funcion *qnorm()* permite calcular el valor de X que acumula una dada probabilidad *p*.
+
+$\bullet$ Hagamos algunos calculos,
+
+```{r}
+# Calculamos el valor de X que acumula el 0.5 de probabilidad.
+qnorm(p = 0.5, mean = 0, sd = 1)
+```
+
+## rXXX
+
+La ultima funcion que vamos a ver es *rnorm()*, que genera *n* valores aleatorios, siguiendo las probabilidades establecidas por una dada distribucion normal.
+
+$\bullet$ Generemos 20 valores.
+
+```{r}
+(valoresNormales <- rnorm(n = 20, mean = 0, sd = 1))
+```
+
+*NOTA: los numeros aleatorios generados por el R son PSEUDOALEATORIOS. La semilla de aleatoriedad puede establecerse mediante la funcion set.seed(). Esto permite la reproduccion de los resultados.*
+
+\subsection[]{B.2 Evaluacion de supuestos y graficos diagnosticos}
+
+En esta seccion vamos a practicar como se evaluan los supuestos de las muestras y aprenderemos a observar graficos diagnosticos.
+
+Veamos que dice la prueba de Shapiro-Wilks sobre la muestra recien generada.
+
+```{r}
+shapiro.test(valoresNormales)
+```
+
+Ahora vamos a simular cuatro muestras de una misma distribucion normal con n de 25, 50, 100 y 200. A cada muesta le haremos un QQ-plot y realizaremos la prueba de Shapiro-Wilks.
+
+La funcion *lapply()* toma un vector (en este caso los numeros 25, 50, 100, y 200) y les aplica una funcion, en este caso *rnorm()*. Esto significa que creara cuatro vectores, de largos 25, 50, 100, y 200, y los guardara en una lista. Los otros argumentos de la funcion *rnorm()* tambien se incluyen.
+
+$\bullet$ Creamos los datos.
+
+```{r}
+sampleList <- lapply(X = c(25, 50, 100, 200),
+                     FUN = rnorm,
+                     mean = 0,
+                     sd = 1)
+```
+
+Utilizando la misma logica, realizo la prueba de Shapiro-Wilks para cada uno de los vectores que obtuve en el paso anterior.
+
+```{r}
+pShapiroWilks <- lapply(sampleList, shapiro.test)
+```
+
+A continuacion crearemos un QQ-plot para cada vector y mostraremos en el titulo de cada grafico el n utilizado y el p-valor de la prueba.
+
+```{r}
+# Establecemos un arreglo grafico de dos filas y dos columnas.
+par(mfrow = c(2, 2))
+# Para los valores del 1 al 4 (recordar que tenemos 4 elementos en la lista).
+for (i in 1:4) {
+  qqnorm(sampleList[[i]],
+         main = paste0("n = ",
+                       length(sampleList[[i]]),
+                       " | Shapiro-Wilks p-valor = ",
+                       round(pShapiroWilks[[i]]$p.value, digits = 2))) 
+  qqline(sampleList[[i]])
+}
+```
+
+Si volvemos a correr la linea que crea el objeto pShapiroWilks, podremos graficar cuatro muestras diferentes.
+
+Como mencionamos en la guia, la prueba de Shapiro-Wilks es una prueba de hipotesis y utiliza por default un alfa de 0,05. Esto significa que de 100 veces, en 5 casos se rechazaria Ho.
+
+$\bullet$ Vamos a simular 1000 muestras de 20 observaciones con $\mu$ = 30 y \(sd = 10\). Realizamos un histograma de los p-valores obtenidos y observamos en cuantos casos se rechazaria la *Ho*.
+
+```{r}
+#Creamos un dataframe con 2 columnas y 1000 filas.
+datos_SW <- data.frame("Simulacion" = vector(mode = "numeric", length = 1000),
+                       "p_valor" = vector(mode = "numeric", length = 1000))
+# Hacemos un loop que extrae 1000 muestras de n = 20, ejecuta la prueba de Shapiro-wilks y  almacena el p-valor en el dataframe.
+
+for (i in 1:1000) {
+  simulacion <- rnorm(20, 30, 10)
+  p_valor_SW <- shapiro.test(simulacion)$p.value
+  datos_SW[i, ] <- list(i, p_valor_SW)
+}
+
+# Veamos el dataframe.
+head(datos_SW)
+# Construyamos el histograma.
+hist(datos_SW$p_valor)
+# Veamos en cuantos casos se rechaza H0.
+datos_SW$conclusion <- ifelse(test = datos_SW$p_valor < 0.05,
+                              yes = "Rechazo normalidad",
+                              no = "No rechazo normalidad")
+table(datos_SW$conclusion)
+```
+
+En la siguiente seccion graficaremos los QQ-plots de muestras provenientes de una poblacion normal que no superan la prueba de Shapiro-Wilks.
+
+$\bullet$ Generamos muestras de una distribucion normal con p-valores de Shapiro-Wilks \(< 0,05\).
+
+```{r}
+# Simulemos.
+muestras <- vector(mode = "list", length = 4)
+# Para cada elemento de 'muestras, creo un vector con la muestra y obtengo el p-valor.
+# Mientras el p-valor sea >= 0.05 creo un nuevo vector, obtengo el p-valor y vuelvo a evaluar la condicion.
+# Cuando la condicion deja de cumplirse guardo la muestra x en el objeto 'muestra'
+for (i in seq_along(muestras)) {         
+  x <- rnorm(n = 100, mean = 0, sd = 1)  
+  p_valor <- shapiro.test(x)$p.value
+  while (p_valor >= 0.05) {              
+    x <- rnorm(n = 100, mean = 0, sd = 1) 
+    p_valor <- shapiro.test(x)$p.value   
+  }                                      
+  muestras[[i]] <- x                     
+}
+```
+
+$\bullet$ Ahora grafiquemos los QQ-plots de las cuatros muestras.
+
+```{r}
+par(mfrow = c(2, 2))
+for (i in seq_along(muestras)) {
+  qqnorm(muestras[[i]])
+  qqline(muestras[[i]])
+}
+```
+
+Si repiten ambos loops pueden observar diferentes muestras de a cuatro para ajustar un poco el analisis de graficos.
+
+```{r}
+par(mfrow = c(1, 1)) # Restauramos la cantidad de graficos por dispositivo.
+```
+\subsection[]{A.3 Simulaciones en regresion}
+
+Ahora queremos ver que es lo que pasa con las estimaciones cuando simulamos regresiones normales. Para esto primero vamos a ver como generar artificialmente una regresion lineal simple.
+
+Una regresion tiene la siguiente forma:  
+$$Y = \beta_0 + \beta_1*x + \epsilon$$
+
+$\bullet$ Simule una regresion lineal simple con tamaño de la muestra de 50, $\beta_0$=40, $\beta_1$=-4 y $\sigma$=5. Grafique.
+
+*Sugerencia: para generar los $\epsilon$ utilice la funcion rnorm. Recuerde que la funcion lm ajusta un modelo lineal*
+
+```{r}
+beta0 = 40  
+beta1 = -4 
+sigma = 5
+n=50
+X<-seq(0, 10, length=n)
+e = rnorm(n,0,sigma)
+Y = beta0 + beta1*X + e
+m1<-lm(Y~X)
+```
+
+$\bullet$ Grafique para inspeccionar los datos.
+
+```{r}
+plot(X,Y)
+abline(lm(Y~X), col="red")
+```
+
+$\bullet$ Inspeccione el resultado del modelo utilizando la funcion *summary()*
+
+```{r}
+summary(m1)
+```
+
+$\bullet$ Verifique los supuestos de normalidad y homogeneidad de varianzas. Ayuda: utilice la funcion *rstandard* y *predict*.
+
+```{r}
+#normalidad
+em1<-rstandard(m1)
+qqnorm(em1)
+qqline(em1)
+#homogeneidad de varianzas
+plot(predict(m1),rstandard(m1))  
+abline(0,0, col="red")
+```
+
+$\bullet$ Repita la simulacion del modelado 1000 veces, extraiga el coeficiente $\beta_1$ en cada simulacion y realice un histograma. Ayuda: para obtener el valor del coeficiente haga *model$coefficients[2]*.
+
+*Mas ayuda: aca debajo les dejamos una forma de simular varias veces algun proceso que uno desea y lo *guarda* en un data frame.*  
+  
+```{r}
+data<-data.frame()
+for(i in 1:1000) {
+  X<-runif(n,0,10)
+  e = rnorm(n,0,sigma)
+  Y = beta0 + beta1*X + e
+  model<-lm(Y~X)
+  b1<-c(i, model$coefficients[2],summary(model)[[4]][4])
+  data<-cbind(rbind(data, b1)) 
+}
+colnames(data)<-c("simulacion", "b1","se")
+```
+
+```{r}
+par(mfrow=c(1,2))
+hist(data$b1,freq=FALSE)
+abline(v=beta1,col="red")
+hist(data$se,freq=FALSE)
+abline(v=mean(data$se),col="blue")
+```
+
+$\bullet$ ¿Qué ocurre si aumentamos el error del modelo (varianza residual, no explicada)?. Realice el mismo procedimiento que antes pero con $\sigma$=50 y justifique.
+
+```{r}
+beta0 = 40  
+beta1 = -4 
+sigma2 = 50
+n=50
+X2<-seq(0, 10, length=n)
+e2 = rnorm(n,0,sigma2)
+Y = beta0 + beta1*X2 + e
+m2<-lm(Y~X)
+summary(m2)
+```
+
+```{r}
+#normalidad
+em2<-rstandard(m2)
+qqnorm(em2)
+qqline(em2)
+#homogeneidad de varianzas
+plot(predict(m2),rstandard(m2))  
+abline(0,0, col="red")
+```
+
+```{r}
+data2<-data.frame()
+for(i in 1:1000) {
+  X<-runif(n,0,10)
+  e = rnorm(n,0,sigma)
+  Y = beta0 + beta1*X + e2
+  model<-lm(Y~X)
+  b2<-c(i, model$coefficients[2],summary(model)[[4]][4])
+  data2<-cbind(rbind(data2, b2)) 
+}
+colnames(data2)<-c("simulacion", "b1","se")
+par(mfrow=c(1,2))
+hist(data2$b1,freq=FALSE)
+abline(v=beta1,col="red")
+hist(data2$se,freq=FALSE)
+abline(v=mean(data2$se),col="blue")
+```
+
+$\bullet$ ¿Qué ocurre si aumentamos el n?. Realice el mismo procedimiento que antes pero con n=1000 y justifique.
+
+```{r}
+beta0 = 40  
+beta1 = -4 
+sigma = 5
+n2=1000
+X<-seq(0, 10, length=n2)
+e3 = rnorm(n2,0,sigma)
+Y = beta0 + beta1*X + e3
+m3<-lm(Y~X)
+summary(m3)
+```
+
+```{r}
+#normalidad
+em3<-rstandard(m3)
+qqnorm(em3)
+qqline(em3)
+#homogeneidad de varianzas
+plot(predict(m3),rstandard(m3))  
+abline(0,0, col="red")
+```
+
+```{r}
+data3<-data.frame()
+for(i in 1:1000) {
+  X<-runif(n2,0,10)
+  e = rnorm(n2,0,sigma)
+  Y = beta0 + beta1*X + e
+  model<-lm(Y~X)
+  b3<-c(i, model$coefficients[2],summary(model)[[4]][4])
+  data3<-cbind(rbind(data3, b3)) 
+}
+colnames(data3)<-c("simulacion", "b1","se")
+par(mfrow=c(1,2))
+hist(data3$b1,freq=FALSE)
+abline(v=beta1,col="red")
+hist(data3$se,freq=FALSE)
+abline(v=mean(data3$se),col="blue")
+```
+
+$\bullet$ Hacemos un resumen.  
+
+```{r}
+res<-data.frame(cbind(rep(beta0,3),rep(beta1,3),c(sigma,sigma2,sigma),c(n,n,n2),c(mean(data$b1),mean(data2$b1),mean(data3$b1)),c(mean(data$se),mean(data2$se),mean(data3$se))))
+colnames(res)<-c("b0","b1","sigma","n","mean(b1)","mean(se)")
+res
+```
+  
+Ahora bien, ¿Que pasa si el supuesto de homogeneidad de varianzas no se cumple? ¿Como se visualiza?
+  
+$\bullet$ Simule la misma regresion pero ahora calcule a $\epsilon$ como: $\epsilon = rnorm(n,0,sigma * X)$. Verifique los supuestos y grafique.  
+
+```{r}
+beta0 = 40  
+beta1 = -4 
+sigma = 50
+n=50
+X<-seq(0, 1000, length=n)
+e = c()
+for (i in 1:n){
+  e = c(e,rnorm(1,0,sigma*X[i]))
+}
+
+sigma*X
+X
+plot(1:n,e)
+points(1:n,e1,col="red")
+e = c(e,rnorm(1,0,sigma*X[i]))
+e1 = rnorm(n,0,sigma*X)
+Y = beta0 + beta1*X + e
+m1<-lm(Y~X)
+summary(m1)
+```
+  
+$\bullet$ Graficamos.
+
+```{r}
+plot(X,Y)
+abline(lm(Y~X), col="red")
+```
+
+$\bullet$ Verificamos supuestos.
+
+```{r}
+#normalidad
+em1<-rstandard(m1)
+shapiro.test(em1)
+qqnorm(em1)
+qqline(em1)
+#homogeneidad de varianzas
+plot(predict(m1),rstandard(m1))  
+abline(0,0, col="red")
+```
+
+*Vemos que no se cumple ni la normalidad ni la homogeneidad de varianzas, y eso se debe a que la varianza de $\epsilon$ es funcion lineal de la variable predictora.*
+
+$\bullet$ Simule la misma regresion pero ahora calcule a $\epsilon$ como: $\epsilon = runif(n,0,10)$. Verifique los supuestos y grafique.  
+
+```{r}
+beta0 = 40  
+beta1 = -4 
+sigma = 5
+n=50
+X<-seq(0, 10, length=n)
+e = runif(n,0,10)
+Y = beta0 + beta1*X + e
+m1<-lm(Y~X)
+summary(m1)
+```
+  
+*Graficamos*
+```{r}
+plot(X,Y)
+abline(lm(Y~X), col="red")
+```
+
+*Verificamos supuestos*
+```{r}
+#normalidad
+em1<-rstandard(m1)
+shapiro.test(em1)
+qqnorm(em1)
+qqline(em1)
+#homogeneidad de varianzas
+plot(predict(m1),rstandard(m1))  
+abline(0,0, col="red")
+```
+
+*Vemos que no se cumple normalidad pero si la homogeneidad de varianzas, y eso se debe a que $\epsilon$ no proviene de una distribucion normal.*

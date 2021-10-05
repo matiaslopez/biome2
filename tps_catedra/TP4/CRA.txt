@@ -1,0 +1,31 @@
+Riego	Fertilizacion	CRA
+cada 3 días	con K	77
+cada 3 días	con K	76
+cada 3 días	con K	73
+cada 3 días	con K	75
+cada 3 días	con K	82
+cada 3 días	sin K	74
+cada 3 días	sin K	73
+cada 3 días	sin K	79
+cada 3 días	sin K	77
+cada 3 días	sin K	62
+cada 6 días	con K	89
+cada 6 días	con K	88
+cada 6 días	con K	94
+cada 6 días	con K	80
+cada 6 días	con K	91
+cada 6 días	sin K	81
+cada 6 días	sin K	78
+cada 6 días	sin K	88
+cada 6 días	sin K	80
+cada 6 días	sin K	91
+Diario	con K	76
+Diario	con K	75
+Diario	con K	72
+Diario	con K	65
+Diario	con K	58
+Diario	sin K	72
+Diario	sin K	61
+Diario	sin K	68
+Diario	sin K	64
+Diario	sin K	71

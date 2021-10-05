@@ -1,0 +1,1134 @@
+---
+title: "Biometría II  \nTP Nº 4  \nModelos múltiples"
+output: pdf_document
+latex_engine: pdflatex
+font-family: Arial
+documentclass: article
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE,size=10, tidy=TRUE, tidy.opts=list(width.cutoff=65))
+options(emmeans= list(emmeans = list(infer = c(TRUE, TRUE)), 
+                      contrast = list(infer = c(TRUE, TRUE))))
+
+```
+
+El objetivo de este TP es profundizar el ajuste de modelos lineales generales con mayor grado de complejidad, hasta ahora habíamos estudiado situaciones en donde no se cumplían los supuestos para la validez de pruebas que estiman los parámetros por cuadrados mínimos. En este trabajo práctico sumamos la complejidad de analizar modelos con más de una variable explicativa, pudiendo éstas ser categóricas, continuas o de ambos tipos y pudiendo o no existir interacción entre ellas. 
+
+## Problema 1. Aclimatación al estrés hídrico en *Eucalyptus globulus*
+
+En los sistemas forestales, luego de la plantación, múltiples factores de estrés abiótico y biótico afectan la supervivencia y el crecimiento de los árboles. El estrés hídrico es el fenómeno más frecuente. Es posible mejorar la eficiencia de una plantación, aplicando prácticas de aclimatación de las plantas en vivero. Una de ellas, es la técnica de restricción de riego que permite aclimatar a las plantas a las condiciones de sequía y se aplica al final del ciclo de producción de las plantas en vivero. Asimismo, se cree que la fertilización con potasio podría favorecer el proceso. El objetivo de este trabajo fue evaluar el comportamiento de plántulas *Eucalyptus globulus* sometidas a tres regímenes de riego y a dos niveles de fertilización potásica al final de ciclo de producción en vivero. Se trabajó con plantas de 8 meses de edad, en envases de 3 l, utilizando como sustrato tierra orgánica. Las plantas fueron asignadas al azar a tres regímenes hídricos: Riego diario (sin estrés hídrico), Riego cada 3 días (estrés moderado) o Riego cada 6 días (estrés alto) y a dos niveles de fertilización potásica: con fertilización potásica (1,8 g/l) y sin fertilización potásica. Al cabo de tres meses de tratamiento en vivero, se evaluó el grado de aclimatación sometiendo a todas las plantas a un período de sequía de 9 días, al cabo de los cuales se midió el contenido relativo de agua (CRA %). El CRA es el contenido porcentual de agua de la planta en relación al contenido de agua a hidratación máxima y constituye una medida del estado hídrico de una planta (cuanto mayor, mejor el estado de la planta). Los resultados, en el archivo *CRA.txt*.   
+
+- Identifique la unidad experimental, la variable respuesta, la o las variables explicativas, la cantidad de réplicas del ensayo y el diseño.   
+U.E: envase de 3l con tierra organica con una planteado.  
+v.a: contenido relativo de CRA al cabo de 9 dias de exposicion a sequia.  
+v.e: niveles de estres hidrico (nulo, bajo, alto) y fertilizacion potasica (con/sin).  
+replicas: N/(3*2).  
+Disenio: factorial, 2 factores (DCA).    
+
+- ¿En función de qué información piensa Ud que se decidió el número de réplicas del experimento?
+
+- Especifique el modelo en términos del problema. 
+
+```{r}
+Datos<-read.delim("/home/jose/Documents/materias/biome2/2019/tps/tp4/CRA.txt",header=T)
+library(ggplot2) # Para hacer gráficos de interacción
+library(car) # Para prueba de Levene
+library(emmeans) #Para comparaciones a posteriori.
+source("/home/jose/Documents/funciones2.R")
+```
+
+$$CRA_i=\beta_0+\beta_1*[3dias]_i+\beta_2*[6dias]_i+\beta_3*[K]_i+\beta_4*[3dias]*[K]_i+\beta_5*[6dias]*[K]_i+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma^2)$$
+$$i = 1: n (30)$$
+
+- Describa estadísticamente los datos. Efectúe un gráfico de perfiles, ¿qué puede interpretar del mismo?  
+
+```{r}
+attach(Datos)
+str(Datos)
+library(psych)
+describeBy(Datos$CRA,list(Datos$Riego,Datos$Fertilizacion))
+#medias
+tapply(Datos$CRA,list(Datos$Riego,Datos$Fertilizacion),mean)
+#desvío estándar
+round(tapply(Datos$CRA,list(Datos$Riego,Datos$Fertilizacion),sd),2)
+#Graficos de perfiles
+medias.Datos<-aggregate(CRA~Riego+Fertilizacion, Datos,mean)
+summary(medias.Datos)
+gperfiles <- ggplot(medias.Datos, aes(x=Riego, y=CRA, colour=Fertilizacion, group=Fertilizacion))
+gperfiles + geom_line(aes(linetype=Fertilizacion), size=0.6) + geom_point(aes(shape=Fertilizacion), size=3) 
+
+# Otra opción gráfica
+interaction.plot(Datos$Riego, Datos$Fertilizacion, Datos$CRA, col=c(4,2))
+```
+
+*El grafico de perfiles muestra un incremento en el CRA entre los grupos con diferente regimenes de riego. Sin embargo, no parciera existir un cambio en la tendencia debido al agregado de fertilizador.* 
+
+- ¿Se cumplen los supuestos del modelo? Fundamente.  
+
+```{r}
+modelo1<-lm(CRA~Riego+Fertilizacion+Riego:Fertilizacion, data=Datos)
+#anova(modelo1) nos muestra una tabla con las fuentes de variación a la que 
+#comúnmente se llama ¨tabla de anova¨
+anova(modelo1)
+#summary(modelo1) nos muestra los estimadores de los parámetros del modelo con 
+#sus errores estándar y significaicón
+summary(modelo1)
+#Calculamos los residuos y los predichos
+e<-resid(modelo1) # residuos
+re<-rstandard(modelo1) #residuos estandarizados
+re<-round(re,3)
+pre<-predict(modelo1) #predichos
+res<-data.frame(Riego, Fertilizacion, CRA,pre,e,re)
+head(res)
+
+#Supuestos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+leveneTest(CRA~Riego*Fertilizacion, Datos, center=mean)
+```
+
+*Los supuestos de homocedasticidad y de normalidad parecieran cumplirse.**  
+
+- Ponga a prueba las hipótesis adecuadas en relación a los objetivos del ensayo. Concluya. Incluya magnitud del efecto. ¿Con algún tratamiento cree que se lograron condiciones que favorezcan la adaptación al estrés hídrico?  ¿Recomendaría fertilización con K para mitigar los efectos del estrés hídrico?  
+
+```{r}
+modelo1<-lm(CRA~Riego*Fertilizacion, data=Datos) 
+anova(modelo1) 
+(comparacion <- emmeans(modelo1,pairwise~Riego))
+plot(comparacion$contrasts)
+ ```
+
+```{r,echo=FALSE}
+hCI6vs3<-round(abs(as.data.frame(comparacion$contrasts)[[6]][1]),2)
+lCI6vs3<-round(abs(as.data.frame(comparacion$contrasts)[[5]][1]),2)
+lCI1vs3<-round(abs(as.data.frame(comparacion$contrasts)[[5]][2]),2)
+hCI1vs3<-round(abs(as.data.frame(comparacion$contrasts)[[6]][2]),2)
+lCI6vs1<-round(abs(as.data.frame(comparacion$contrasts)[[5]][3]),2)
+hCI6vs1<-round(abs(as.data.frame(comparacion$contrasts)[[6]][3]),2)
+```
+
+*El estres hidrico genera diferencias en el CRA. En particular, los grupos de riego cada 3 y 6 dias mostraron valores de CRA superiores al grupo de riego diario (ver Tabla 1). La fertilizacion con K no parece haber generado diferencias en cuanto a la adaptacion al estres hidrico por lo que no seria recomendado para mitigar sus efectos.*  
+
+
+```{r,echo=FALSE}
+a<-data.frame(rbind(c(hCI6vs3,lCI6vs3),c(lCI1vs3,hCI1vs3),c(lCI6vs1,hCI6vs1)))
+a$names<-c("6 vs 3 dias","1 vs 3 dias","6 vs 1 dias")
+colnames(a)<-c("inferior","superior","names")
+library(gt)
+gt_tbl <- a %>%gt(rowname_col = 'names')%>%tab_header(title = md("Tabla 1: Limites del intervalo de confianza"), subtitle = md("&nbsp;"))%>% tab_stubhead(label = "comparacion")
+
+#gt_tbl
+```
+- Analice los datos considerando a la variable frecuencia de riego como cuantitativa (1, 3 y 6 días). ¿Cómo plantearía el modelo? ¿Esperaría los mismos resultados que en el abordaje analítico anterior? Ajuste este nuevo el modelo y concluya.
+
+```{r}
+#pasamos riego a cuantitativa
+head(Datos)
+#vemos como se llaman los niveles
+levels(Datos$Riego)
+#ahora reemplazamos en la base de datos directamente
+levels(Datos$Riego)[levels(Datos$Riego)==levels(Datos$Riego)[1]] <- 3
+levels(Datos$Riego)[levels(Datos$Riego)==levels(Datos$Riego)[2]] <- 6
+levels(Datos$Riego)[levels(Datos$Riego)==levels(Datos$Riego)[3]] <- 1
+#vemos que aun son factores
+str(Datos)
+#ahora los pasamos a numeric
+Datos$Riego=as.numeric(levels(Datos$Riego))[Datos$Riego]
+str(Datos)
+```
+
+$$CRA_i=\beta_0+\beta_1*dias_i+\beta_2*[K]+\beta_3*dias_i*[K]+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma^2)$$
+$$i = 1: n (32)$$
+
+```{r}
+modelo2<-lm(CRA~Riego*Fertilizacion, data=Datos)
+summary(modelo2)
+```
+
+```{r}
+(riegoLCL <- confint(modelo2)[2])
+(riegoHCL <- confint(modelo2)[6])
+```
+
+*Por cada disminucion en la frecuencia de riego en un dia se espera un efecto de aumento de CRA de entre `r riegoLCL` y `r riegoHCL`.*  
+
+## Problema 2. Regulación de la producción de aceites esenciales en cedrón *Aloysia citriodora*
+
+El cedrón (*Aloysia citriodora*) ocupa un lugar trascendente en el mercado herbario debido a los atributos sensoriales y medicinales de su aceite esencial. La producción de aceite esencial está regulada por condiciones ambientales que generan estrés en la planta, como la competencia entre plantas de cedrón por recursos, disponibilidad de agua y radiación solar. Se cree que frente al estrés la planta destina mayor cantidad de fotoasimilados a la producción de compuestos secundarios como los aceites esenciales. Una investigadora evaluó el efecto de la competencia (sin competencia, es decir una planta por maceta, y con competencia, es decir 5 plantas por maceta) en tres genotipos correspondientes a tres localidades distintas (Buenos Aires, Mendoza y San Luis) sobre el rendimiento de aceite esencial. Para ello dispuso 30 macetas con sustrato uniforme, a las cuales les asignó al azar los tratamientos. Luego de 6 meses se midió la concentración de aceite en tallo y hojas (ml de aceite/100gr de MS). La investigadora desea responder las siguientes preguntas:  
+
+- ¿El efecto de la competencia sobre la producción de aceites esenciales es el mismo en los tres genotipos?  
+
+- Si el efecto de la competencia no es el mismo para los tres genotipos, ¿cuál es el genotipo que resulta más afectado y cuál menos?  
+
+- Si un productor decide trabajar con alta densidad de plantas ¿qué genotipo le recomendaría para maximizar la producción de aceites esenciales?  
+
+Los datos se encuentran en el archivo *Cedron.txt*. 
+
+- Explique claramente cuál es la unidad experimental, la variable respuesta y las variables explicatorias. Indique la cantidad de réplicas del ensayo. Describa los datos.
+
+U.E: cada maceta con sustrato con una determinada cantidad de plantas.  
+v.a: [ml de aceite/100gr masa seca].  
+v.e: niveles de competencia (con, sin) y genotipo (mendoza, san luis y buenos aires).  
+replicas: N/(3*2), osea 5.  
+Disenio: factorial, 2*3 (DCA). 
+
+```{r}
+library(ggplot2) # Para hacer gráficos de interacción
+#library(car) # Para prueba de Levene
+library(emmeans)
+Datos<-read.delim("/home/jose/Documents/materias/biome2/2019/tps/tp4/Cedron.txt",header=T)
+attach(Datos)
+names(Datos)
+str(Datos)
+```
+
+```{r}
+library(psych)
+describeBy(Datos$aceite,list(Datos$densidad,Datos$provincia))
+#medias
+tapply(Datos$aceite,list(Datos$densidad,Datos$provincia),mean)
+#desvío estándar
+round(tapply(Datos$aceite,list(Datos$densidad,Datos$provincia),sd),2)
+```
+
+```{r}
+#Graficos de perfiles
+(medias.Datos<-aggregate(aceite~densidad+provincia, Datos,mean))
+gp <- ggplot(medias.Datos, aes(x=densidad, y=aceite, colour=provincia, group=provincia))
+gp + geom_line(aes(linetype=provincia), size=.6) +geom_point(aes(shape=provincia), size=3) 
+gp1 <- ggplot(medias.Datos, aes(x=provincia, y=aceite, colour=densidad, group=densidad))
+gp1 + geom_line(aes(linetype=densidad), size=.6) +geom_point(aes(shape=densidad), size=3) 
+```
+
+```{r}
+# Otra opción gráfica
+interaction.plot(Datos$provincia, Datos$densidad, Datos$aceite, col=c(4,2))
+```
+
+- Especifique el modelo en términos del problema.
+
+$$y_{ijk}=\mu+\alpha_i+\beta_j+\alpha*\beta_{ij}+\epsilon_{ijk}$$
+$$\epsilon_{ijk} \sim NID(0, \sigma^2)$$
+$$y_{ijk} = concentracion \: de \: aceite \: en \: tallos \: y \: hojas$$ 
+$$\alpha_i = efecto \: de \: la \: competencia, 1:2$$
+$$\beta_j = efecto \: del \: genotipo, 1:30$$
+$$k = 1:5(refiere \: a \: la \: replica)$$
+
+```{r}
+modelo1<-lm(aceite~densidad+provincia+densidad:provincia, data=Datos)
+modelo2<-lm(aceite~densidad*provincia, data=Datos) 
+# con el signo * se incluyen los fatores individuales y la interacción
+# Es equivalente la forma de ingreso de ambos modelos?  
+anova(modelo1)
+anova(modelo2)
+```
+
+- ¿Se verifican los principios de aleatoriedad, replicación y control del error? Fundamente su respuesta.  
+
+*Aleatoriedad se cumple ya que se asigno al azar cada ue a los tratamientos. La replicacion tambien se verifica ya que hay 5 relicas por tratamiento. El control de error lo suponemos ya que la descripcion del disenio experimental no nos permite establecerlo.*  
+
+-Verifique los supuestos del modelo. 
+
+```{r}
+e<-resid(modelo2) # residuos
+re<-rstandard(modelo2) #residuos estandarizados
+pre<-predict(modelo2) #predichos
+res<-data.frame(Datos$provincia, Datos$densidad, Datos$aceite,pre,e,round(re,3))
+colnames(res)<-c("provincia", "densidad", "aceite", "Predichos", "Residuos", "residuos std") 
+head(res)
+```
+
+```{r}
+sum(e)
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+par(mfrow = c(1, 1))
+leveneTest(aceite~provincia*densidad, Datos, center=mean)
+```
+
+- ¿Qué ventaja le aporta a la investigadora haber realizado un ensayo con los tratamientos en arreglo factorial? 
+
+*La ventaja de hacer el ensayo con arreglo factorial es la potencia asociada a estos disenios. Permite poner a prueba hipotesis con una alta confianza.*  
+
+- Identifique qué pruebas le permitirán responder a cada una de las preguntas de la investigadora.  
+
+a) ¿El efecto de la competencia sobre la producción de aceites esenciales es el mismo en los tres genotipos?  
+
+```{r}
+modelo2
+anova(modelo2)
+```
+
+*No, dado que la interaccion es genotipo y provincia es significativa indicando que la competencia no afecta por igual a todos los genotipos.*  
+
+b) Si el efecto de la competencia no es el mismo para los tres genotipos, ¿cuál es el genotipo que resulta más afectado y cuál menos?  
+
+```{r}
+(comparaciones1<-emmeans(modelo2, pairwise ~ densidad|provincia))
+plot(comparaciones1$emmeans,comparisons=TRUE)
+```
+
+*Tanto buenos aires como mendoza ven reducida su produccion, mientras que san luis es la menos afectada.*  
+
+c) Si un productor decide trabajar con alta densidad de plantas ¿qué genotipo le recomendaría para maximizar la producción de aceites esenciales?  
+
+*Aca interesa solamente cual es la que tiene mayor produccion en alta densidad.*  
+
+```{r}
+(comparaciones2<-emmeans(modelo2, pairwise ~ provincia|densidad))
+plot(comparaciones2$emmeans,comparisons=TRUE)
+```
+
+*Vemos que mendoza es la que tiene la myor produccion en alta densidad y esta diferencia es mayor que para los otros genotipos. Recuerden que no pueden hacer estos efectos simples en el mismo estudio. Si debieran responder estas preguntas juntas, entonces solo podrian hacer tukey.*  
+ 
+
+- Plantee las hipótesis y concluya en relación a las preguntas de la investigadora. Evalúe e informe la magnitud del efecto en valores absolutos y porcentuales para reforzar sus conclusiones. 
+
+```{r}
+Efectos_simples <- emmeans(modelo2,pairwise ~ densidad * provincia)
+confint(Efectos_simples)
+plot(Efectos_simples, comparisons = TRUE)
+```
+
+## Problema 3. Efecto de la granivoría sobre *Ipomopsis gossypifera*
+
+La herbivoría puede producir diferentes efectos sobre las plantas depredadas, desde la muerte de la planta hasta la sobrecompensación, un incremento en la biomasa de las plantas depredadas (respecto a la de las no depredadas), frecuentemente a expensas de la asignación de recursos a reproducción. Se hizo un experimento de clausura para evaluar el efecto de la granivoría por ratones sobre la producción de semillas de una especie de planta bianual (*Ipomopsis* sp.). Se dispusieron un total de 40 plantas al azar en un área; la mitad de ellas estuvieron en situación de clausura desde el comienzo de la experiencia; mientras que a las otras 20 se las dejó con libre acceso para los ratones granívoros las primeras dos semanas en que estaban elongando su tallo, y después fueron clausuradas para permitir que rebroten. Dado que se sabe que el tamaño de las plantas puede estar relacionado con su producción de semillas, se midió el diámetro de la parte superior de la raíz de cada planta al inicio de la experiencia. Al final de la temporada de crecimiento se midió el peso seco de los frutos producidos por cada planta (en mg). Los datos están disponibles en el archivo *Ipomopsis.txt*.
+
+```{r}
+datos<-read.delim("/home/jose/Documents/materias/biome2/2019/tps/tp4/Ipomopsis.txt",header=T)
+library(ggplot2) # Para hacer gráficos de interacción
+```
+
+- Calcule el peso medio de las semillas producidas por planta para cada tratamiento. Haga un gráfico de dispersión de peso de semillas en función del diámetro de la raíz para los dos grupos (con y sin clausura total de ratones). 
+
+```{r}
+ggplot(datos, aes(x =raiz , y = peso_sem, colour=pastoreo)) +  geom_point(size=4)
+```
+
+```{r}
+res=data.frame()
+for (i in 1:length(levels(datos$pastoreo))){
+  res[levels(datos$pastoreo)[i],1]=mean(datos[datos$pastoreo==levels(datos$pastoreo)[i],2])
+}
+res
+```
+
+- Indique cual es la variable dependiente o respuesta y la/s variables explicatorias. ¿De que tipo es cada una? ¿Qué predicciones efectuaria en función de la informacion presentada?    
+
+U.E: cada parcela.  
+v.a: peso de semillas (mg).  
+v.e: cuantiativa continua, diametro de la raiz (unidades?) y cualitativa discreta niveles de pastoreo (con y sin).  
+replicas: 20.  
+Disenio: factorial, (DCA). 
+
+*Observado el grafico de dispersion de las variables se observa un incremento en el peso de las semillas en el area con clausura, sin embargo no hay evidencias de una interaccion entre la condicion de clausura y el diamtetro de la raiz.*  
+
+- Escriba el modelo teórico en términos del problema.  
+
+$$E(Peso \: semillas_i)= \beta_0 + \beta_1*[diametro \: raiz] + \beta_2*[pastoreo] + \beta_3*[diametro \: raiz]*[pastoreo]$$
+
+$$Peso \: semillas_i \sim N(0, \sigma^2)$$
+$$i = 1: n (40)$$
+
+- Evalúe si hay una relación significativa entre el diámetro inicial de la raíz de una planta y el peso de las semillas que produjo al madurar. ¿Esa relación difiere entre el grupo clausurado y el no clausurado? Calcule las ecuaciones de regresión lineal; si la interacción fuera no significativa compare las ecuaciones a partir de los coeficientes del modelo que la incluye y de los de un modelo simplificado que no la incluya. ¿Por que es valido, en este caso evaluar, un modelo sin interaccion?  
+
+```{r}
+#planteo el modelo con interaccion
+modelo1<-lm(peso_sem~raiz*pastoreo, datos)
+summary(modelo1)
+```
+
+```{r}
+#Supuestos
+e<-resid(modelo1) # residuos
+re<-rstandard(modelo1) #residuos estandarizados
+pre<-predict(modelo1) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+round(confint(modelo1),2) 
+summary(modelo1)$adj.r.squared
+AIC(modelo1)
+```
+
+```{r}
+anova(modelo1)  # NS, (p=0.75), puedo no incluir la interacción (raiz no es trat)
+```
+
+```{r}
+# Si quisiera utilizar este modelo y comparar pendientes
+comp_pendientes <- emtrends(modelo1, ~ pastoreo, var="raiz") #, contr="cld"
+pairs(comp_pendientes)
+plot(comp_pendientes, comparisons = TRUE)
+```
+
+```{r}
+# aditivo
+modelo2<-lm(peso_sem~raiz+pastoreo, datos)
+summary(modelo2)
+```
+
+```{r}
+#Supuestos
+e2<-resid(modelo2) # residuos
+re2<-rstandard(modelo2) #residuos estandarizados
+pre2<-predict(modelo2) #predichos
+par(mfrow = c(1, 2))
+plot(pre2, re2, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e2)
+shapiro.test(e2)
+```
+
+```{r}
+round(confint(modelo2),2) 
+summary(modelo2)$adj.r.squared
+AIC(modelo2)
+```
+
+```{r}
+#comparo los dos modelos
+AIC(modelo1,modelo2)
+```
+
+*En este caso es valido estimar un modelo sin interaccion porque el diametro de la raiz no es un tratamiento impuesto por el que realiza el estudio.*  
+
+- ¿Cuál es el efecto de la herbivoría si comparara a ambos grupos directamente? ¿Cuál es el efecto de la herbivoría una vez descontado el efecto que tiene el tamaño de la planta sobre la producción de frutos?  
+
+- Escriba el modelo final seleccionado. ¿Qué porcentaje de la variabilidad en la producción de semillas de *Ipomopsis gossypifera* no explica?   
+
+## Problema 4. Caracterización de de aguas residuales 
+
+```{r}
+datos<-read.delim("/home/jose/Documents/materias/biome2/2020/tps/tp4/aguas.txt",header=T)
+library(ggplot2) # Para hacer gráficos de interacción
+```
+
+En el tratamiento de aguas residuales, la demanda bioquímica de oxígeno (DBO) es considerada como un buen parámetro para determinar el grado de contaminación del agua; a mayor DBO menor calidad. Mide la cantidad de O\textsubscript{2} consumido al degradar la materia orgánica de una muestra líquida y se expresa en mg O\textsubscript{2}/l.). Como paso previo para el diseño de técnicas de depuración de aguas residuales se llevó a cabo un estudio con el objetivo de relacionar la DBO del agua residual respecto al pH de la misma. Se recolectaron seis muestras de tres tipos de aguas residuales, provenientes de tres fuentes distintas (A, B o C). Los resultados se encuentran en el archivo *aguas.txt*
+
+-Indique cual es la variable respuesta y la/s variables explicatorias. ¿De qué tipo es
+cada una? Escriba el modelo teorico en terminos del problema.
+
+v.a: DBO en muestra de agua residual.  
+v.e: fuente (A, B, C, cualitativa discreta) y ph (cuantitativa).  
+
+$$DBO_i=\beta_0+\beta_1*pH_i+\beta_2*fteB_i+\beta_3*fteC_i+\beta_4*pH*fteB_i+\beta_5*pH*fteC_i+\epsilon_i$$
+$$\epsilon_i \sim N(0, \sigma^2)$$
+$$i = 1:18$$
+
+```{r}
+attach(datos)
+```
+
+- Evalúe si hay una relación significativa entre la DBO del agua residual respecto al pH. ¿Esa relación difiere entre las fuentes? Analice la validez y el poder explicativo de un modelo que relacione la DBO con el pH del agua, independientemente de la fuente.  
+
+```{r}
+p<-ggplot(datos, aes(x =pH , y = Y)) +  geom_point(aes(), colour ="deepskyblue", size=4)
+q<-p+ xlab("pH") +  ylab("DBO") +  ggtitle("DBO vs pH")
+q
+```
+
+```{r}
+box <- ggplot(datos, aes(x=fuente, y=pH))+        
+  geom_boxplot()+ 
+  stat_summary(fun=mean, geom="point", shape=19, size=4,color="black")+
+theme_bw()
+box
+```
+
+```{r}
+# boxplot
+(box <- box + geom_jitter(alpha=0.3, size=2,aes(color=fuente), position = position_jitter(width = .2))+theme(legend.position="top", legend.text=element_text(size = 14),legend.title = element_text(size=16, face="bold")))
+```
+
+```{r}
+modelo1<-lm(datos$Y ~ fuente*pH, datos)
+summary(modelo1)
+anova(modelo1)
+```
+
+```{r}
+#Supuestos
+e<-resid(modelo1) # residuos
+sum(e)
+re<-rstandard(modelo1) #residuos estandarizados
+pre<-predict(modelo1) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+#Ecuaciones estimadas para el modelo completo
+ggplot(datos, aes(x =pH , y = Y, colour =fuente)) + geom_point(size=2)+ xlab("pH") +  ylab("DBO") +  ggtitle("DBO en función del pH y la fuente")+ geom_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+# Es un mejor sin el término de interaccion?
+modelo2<-lm(Y ~ pH+fuente, datos)
+summary(modelo2)
+anova(modelo2)
+```
+
+```{r}
+#Supuestos
+e <- resid(modelo2) # residuos
+re<-rstandard(modelo2) #residuos estandarizados
+pre<-predict(modelo2) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="RE vs PRED - Modelo 2" )
+abline(0,0)
+car::qqPlot(e, main="QQplot - Modelo 2")
+shapiro.test(e)
+```
+
+```{r}
+# plot modelo 2
+ggplot(datos, aes(x =pH , y = Y, colour =fuente)) + geom_point(size=4)+xlab("pH") +  ylab("DBO") +  ggtitle("DBO en función del pH, para cada fuente")+ geom_abline(intercept = modelo2$coefficients[1], slope = modelo2$coefficients[2]) + geom_abline(intercept =modelo2$coefficients[1]+modelo2$coefficients[3] , slope = modelo2$coefficients[2]) + geom_abline(intercept = modelo2$coefficients[1]+modelo2$coefficients[4] , slope = modelo2$coefficients[2])
+```
+
+```{r}
+# Modelo que no considera las fuentes
+modelo3<-lm(Y ~ pH, datos)
+summary(modelo3)
+anova(modelo3)
+```
+
+```{r}
+#Supuestos
+e<-resid(modelo3) # residuos
+re<-rstandard(modelo3) #residuos estandarizados
+pre<-predict(modelo3) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="RE vs PRED - Modelo 3" )
+abline(0,0)
+car::qqPlot(e, main = "QQplot -Modelo 3")
+shapiro.test(e)
+```
+
+- Compare los distintos modelos en base a los gráficos diagnosticos, el \(R^2\) y \(R^2_{ajustado}\), y el AIC obtenido. ¿Con cual modelo decide quedarse? Escriba la o las ecuaciones del modelo final.
+
+```{r}
+aics <- AIC(modelo1, modelo2, modelo3)
+r2adj <- c(summary(modelo1)$adj.r.squared,summary(modelo2)$adj.r.squared,summary(modelo3)$adj.r.squared)
+(comparaciones <- data.frame(aics,r2adj))
+```
+
+*Elegimos entonces el modelo1*.  
+
+Escribimos las ecuaciones
+
+```{r}
+(ordendaA <- modelo1$coefficients[1])
+(pendienteA <- modelo1$coefficients[4])
+(ordendaB <-modelo1$coefficients[1]+modelo1$coefficients[2])
+(pendienteB <-modelo1$coefficients[4]+modelo1$coefficients[5])
+(ordendaC <-modelo1$coefficients[1]+modelo1$coefficients[3])
+(pendienteC <-modelo1$coefficients[4]+modelo1$coefficients[6])
+```
+Para la fuente a:
+
+`r pendienteA`$*$pH + `r ordendaA`
+
+Para la fuente b:
+
+`r pendienteB`$*$pH + `r ordendaB`
+
+Para la fuente c:
+
+`r pendienteC`$*$pH + `r ordendaC`
+
+
+```{r}
+# Comparacion de pendientes
+comp_pendientes <- emtrends(modelo1, ~ fuente, var="pH") #, contr="cld"
+pairs(comp_pendientes)
+plot(comp_pendientes, comparisons = TRUE)
+```
+
+```{r}
+Efecto_fuente_PH_promedio <- emmeans(modelo1, pairwise ~ fuente|pH)
+Efecto_fuente_PH_promedio #dif entre fuentes para pH promedio
+confint(Efecto_fuente_PH_promedio)
+plot(Efecto_fuente_PH_promedio$emmeans, comparisons = TRUE)
+```
+
+```{r}
+summary(datos$pH)
+(Efecto_fuente_PH_min_max<-emmeans(modelo1, pairwise~ fuente:pH, cov.reduce = range))
+```
+
+-Si ahora realizamos el mismo modelo pero centrando el pH a su valor promedio, ¿cual es la ventaja que presenta esta variante? Estime y compare la DBO del agua de las tres fuentes, para un valor de pH promedio.
+
+```{r}
+mean(pH)
+datos$pH_c<- datos$pH - mean(pH)
+p<-ggplot(datos, aes(x =pH_c , y = Y, colour =fuente)) + geom_point(size=4)
+q<-p+ xlab("pH") +  ylab("DBO") +  ggtitle("Variación de la DBO en fc del pH y la fuente")
+q + geom_smooth(method = "lm", se = FALSE)
+```
+
+```{r}
+modelo4<-lm(Y ~ pH_c*fuente, datos)
+summary(modelo4)
+```
+
+```{r}
+#Supuestos
+e<-resid(modelo4) # residuos
+re<-rstandard(modelo4) #residuos estandarizados
+pre<-predict(modelo4) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+# comparaciones
+Fuentes_en_PH_PH_c <- emmeans(modelo4, pairwise ~ fuente|pH_c)
+Fuentes_en_PH_PH_c
+confint(Fuentes_en_PH_PH_c)
+plot(Fuentes_en_PH_PH_c$emmeans, comparisons = TRUE)
+```
+
+```{r}
+# Comparacion de pendientes
+comp_pendientes <- emtrends(modelo4, ~ fuente, var="pH_c")
+pairs(comp_pendientes)
+plot(comp_pendientes, comparisons = TRUE)
+```
+- Estime con una confianza del 95% el valor de DBO esperado para aguas residuales provenientes de la fuente A y pH=7. 
+
+```{r}
+p<-ggplot(datos, aes(x =Y , y = predict(modelo1), colour =fuente)) + geom_point(size=4)
+p + geom_abline(intercept = 0, slope =1) +  ggtitle("Predichos vs observados Modelo 3")
+(cor <- cor(predict(modelo1), datos$Y))
+```
+
+```{r}
+#predicciones
+#Banda de confianza
+p<-ggplot(datos, aes(x =pH , y = Y, colour =fuente)) + geom_point(size=2)
+q<-p+ xlab("pH") +  ylab("DBO") +  ggtitle("Variación de la DBO en función del pH y la fuente")
+q + geom_smooth(method = "lm", se = TRUE)
+```
+
+```{r}
+#prediccion de Y para nuevos valores de x
+nuevo = data.frame(fuente= "A", pH=7)
+predict(modelo1, nuevo, interval="predict") 
+```
+
+```{r}
+# CMe
+CMe <- round(c(summary(modelo1)$sigma^2,summary(modelo2)$sigma^2,summary(modelo3)$sigma^2,summary(modelo4)$sigma^2),2)
+# R2 (no para comparar entre modelos)
+R2 <- c(summary(modelo1)$r.squared, summary(modelo2)$r.squared, summary(modelo3)$r.squared, summary(modelo4)$r.squared)
+# R2 ajustado
+R2aj <- c(summary(modelo1)$adj.r.squared, summary(modelo2)$adj.r.squared, summary(modelo3)$adj.r.squared, summary(modelo4)$adj.r.squared)
+#AIC
+AIC <- c(AIC(modelo1), AIC(modelo2), AIC(modelo3), AIC(modelo4))
+# Nombre modelo (para generar un data frame bonito)
+modelo <- c(1,2,3,4)
+comp <- cbind(modelo, CMe, round(R2,2), round(R2aj,2), AIC)
+colnames(comp)<-c("modelo", "CMe", "R2", "R2 ajust", "AIC")
+comp
+```
+
+```{r}
+#validación cruzada
+library(caret)
+set.seed(123) #para hacer reproducibles los resultados
+# Indicamos la función para el entrenamiento 
+train.control<-trainControl(method = "LOOCV") 
+# Entrenamos (estimamos) el modelo  (n modelos con n-1 observaciones) 
+m1loo <- train(Y ~ pH * fuente, data = datos, method ="lm",trControl= train.control)
+m2loo <- train(Y ~ pH, data = datos, method ="lm",trControl= train.control)
+m3loo <- train(Y ~ pH + fuente, data = datos, method ="lm",trControl= train.control)
+```
+
+```{r}
+# resultados
+print(m1loo)
+print(m2loo)
+print(m3loo)
+#dataframe con los resultados
+b<-m1loo$results
+c<-m2loo$results
+d<-m3loo$results
+e<-rbind(b,c,d)
+e<-e[,2:4] 
+#agrego error relativo
+e$ER=e$RMSE/mean(datos$Y)*100  
+e
+```
+
+## Problema 5. Relacion entre dieta y colesterol en mujeres
+
+Se estudió la relación entre la edad de las mujeres y el nivel de colesterol en la sangre de mujeres, considerando si la dieta que consumían se basaba principalmente en alimentos de origen vegetal o animal. Para ello se seleccionaron al azar 20 mujeres con distinto tipo de dieta y se les midió el nivel de colesterol en sangre (en mg/ml). Los resultados fueron (archivo disponible en *DietaColesterol.txt*):    
+
+- Plantee el modelo. Indique cual es la variable dependiente o respuesta y la/s variables. 
+
+- Evalúe estadísticamente si el nivel de colesterol en sangre  depende del origen del alimento principalmente consumido y de la edad.  
+
+- Centre en el valor de x que considere pertinente según el rango analizado. Interprete la pendiente con y sin centrado.  
+
+- Escriba el modelo estimado. Interprete sus coeficientes. ¿Podría estimar con este modelo el nivel de colesterol para un hombre de 51 años de edad? ¿Y para una mujer de 25 años?  
+
+## Problema 6. Diversidad de aves, anfibios y mamiferos del cono sur
+
+Casi dos siglos después del descubrimiento del "gradiente latitudinal" en la riqueza de especies, lo ecólogos y biogeógrafos continúan en la búsqueda de una explicación ampliamente aceptada. La idea de que el control de la energía por parte del clima impulsa el gradiente global de riqueza específica data desde los principios de la biogeografía y ha generado una literatura extensa cuantificando la relación entre riqueza de especies y variables climáticas. 
+La hipótesis de productividad ( Hutchinson 1959, Connell y Orias 1964, Brown 1981 y Wright 1983), propone que la energía limita la riqueza de especies a través de cascadas tróficas. Desde este punto de vista, se establecen límites a la riqueza por la energía que fluye a través de redes tróficas, más que la energía total incidente en un área geográfica. Otra hipótesis propuesta (von Humboldt 1808, Turner et al. 1987, y Currie 1991)  se basa en las necesidades fisiológicas de los organismos frente a la entrada de energía al ambiente, en lugar de la disponibilidad de alimento. Por supuesto, tanto factores fisiológicos como tróficos pueden subyacer a las asociaciones entre clima y riqueza. Un foco adicional de análisis es evaluar para qué grupos de animales y en qué lugares en el mundo, las variables indicadoras de la energía pura o las variables de agua – energía predicen mejor los gradientes de diversidad.
+La base de datos diversidad.txt consiste en un gradiente latitudinal de diversidad de aves, mamíferos y anfibios (6 variables de diversidad en total) y variables ambientales relacionadas a las hipótesis planteadas (18 variables totales). Para ello, se grilló América del Sur en celdas de 1º x 1º (lat x long) y se compiló información acerca de las especies presentes (por ejemplo, BirLife Int. data para aves) y de variables climáticas (WorldClim) en cada celda. Se estudia el gradiente latitudinal para la zona central del continente. La base completa está disponible como parte de la descarga del software SAM: Spatial Analysis in Macroecology, https://www.ecoevol.ufg.br/sam/
+Un componente relevante de la diversidad es la composición taxonómica de los ensambles de especies y la cuantificación de sus cambios en relación a los cambios en las condiciones ambientales permite un acercamiento a comprender sus patrones de distribución.
+En este contexto, les proponemos estudiar la relación entre los cambios en la composición de especies de anfibios (variable a estudiar: Amphibian.Beta...Jaccard) a lo largo del centro del continente sudamericano y los cambios en condiciones de temperatura y precipitación. Los datos se encuentran en el archivo *Diversidad.txt*. Para ello: 
+
+1- Construya una matriz de gráficos de dispersión para hacer una primera inspección de la relación entre pares de variables. También puede indagar las correlaciones entre pares de variables (dado que son muchas, analice por separado las variables de temperatura y las de precipitación)
+2- Ajuste un modelo de regresión múltiple con la diversidad beta de anfibios como variable respuesta y las variables explicativas lineales (por separado para temperatura y precipitación). Evalúe los supuestos necesarios para la validez del modelo.
+3- Simplifique el modelo al menor número de parámetros conveniente para cada conjunto de variables y luego establezca un modelo que incopore alas principales de ambos grupos (i.e., temp y prec), incorporando términos de interacción. Pruebe de volver a trabajar con la estacionalidad de la precipitación ¨Precipitation.Seasonality¨.
+4- Calcule el VIF, el R2 ajustado y el AIC para cada uno de los modelos planteados. Concluya sobre la importancia de los factores de control de la composición taxonómica de los anfibios.
+
+## Problema 7. Diversidad de mamíferos del Cono Sur
+
+Bajo el mismo contexto del Problema 8, responda las mimas preguntas pero para mamiferos (variable Mammal.Beta...Jaccard) y compare los resultados de ambos grupos (anfibios vs mamiferos).
+
+## Problema 8. Biomasa de comunidades de ratones granívoros
+
+En una comunidad, la biomasa de un nivel trofico intermedio (consumidores) puede estar determinada mas bien por la abundancia de sus recursos (un control “desde abajo” o bottom-up) o más bien por la de sus predadores (un control “desde arriba” o top-down). A su vez, todos ellos pueden estar afectados por condicionantes y modificadores de la productividad y la estructura del sistema (como la energía y recursos recibidos por los autótrofos, o la heterogeneidad espacial). Con el objetivo de estudiar algunas variables que podrían determinar  la biomasa de las comunidades de ratones granívoros en 16 localidades ubicadas en ambientes desérticos, se realizó un estudio donde se registró: 1) la producción de semillas en esos ambientes, 2) la abundancia de predadores de la comunidad de ratones granívoros, 3) las precipitaciones medias anuales (un limitante de la productividad primaria en estos ambientes), y 4) la cobertura de la vegetación perenne (un factor estructural importante para los ratones). La base de datos se encuentra en el archivo Ratones.txt [a partir de un ejemplo en Crawley 2002]. En base al enunciado:
+
+1- Construya una matriz de gráficos de dispersión para hacer una primera inspección de la relación entre pares de variables. Calcule el coeficiente de correlación entre pares de variablesy el factor de inflación de la varianza. ¿Recomendaría incluir las 4 variables en un mismo modelo?.  
+
+2- Ajuste distintos modelos de regresión múltiple con la biomasa de ratones como variable respuesta y las variables explicativas que considere apropiadas. Ranquee los modelos en función de su AIC y seleccione modelos candidatos.  
+
+3- Compare los modelos candidatos. Explore los gráficos de residuos parciales. Seleccione elmejor modelo a su juicio fundamentando su decision y concluya sobre la importancia de los factores de control de la comunidad de ratones granivoros de desierto.  
+
+```{r}
+Ratones <- read.delim("/home/jose/Documents/materias/biome2/2019/tps/tp4/martes/ratones.txt")
+colnames(Ratones)=c("ratones","lluvia","predadores","cobertura","semillas")
+```
+
+- Discuta el tipo de estudio, la unidad experimental o de analisis, el tamanioo de la muestra y la poblacion objetivo. Explicite cual es la variable respuesta y tipo de variables explicatorias. 
+
+Tipo de estudio: Observacional.  
+UE: Localidad.  
+N=16.  
+poblacion objetivo: ratones granivoros de ambientes deserticos.  
+VR: numero de ratones.  
+VE: lluvia, predadores, cobertura, semillas (cuantitativas).   
+
+- Construya una matriz de graficos de dispersion para hacer una primera inspeccion de la relacion entre pares de variables. Calcule el coeficiente de correlacion entre pares de variables y el factor de inflacion de la varianza. ¿Recomendaria incluir las 4 variables en un mismo modelo?  
+
+```{r,echo=FALSE}
+library(ggplot2)
+library(ggcorrplot)
+```
+
+```{r}
+plot(Ratones)
+round(cor(Ratones),2)
+```
+
+```{r}
+# Correlation matrix
+names(Ratones)
+corr_datos <- round(cor(Ratones), 2)
+print(corr_datos)
+```
+
+```{r}
+# correlaciones
+ggcorrplot(corr_datos,  
+           type = "lower", 
+           method="circle", 
+           colors = c("tomato2", "white", "springgreen3"), 
+           outline.color="black",
+           ggtheme=theme_bw)
+
+ggcorrplot(corr_datos,  
+           type = "lower", 
+           method="square", 
+           outline.color="black",
+           ggtheme=theme_bw)
+```
+
+```{r}
+library(corrplot)
+# mixto
+corrplot.mixed(corr_datos, 
+               lower.col = "black", 
+               number.cex = .7)
+# ¿Qué variables se encuentran asociadas?
+```
+
+- Ajuste distintos modelos de regresión múltiple con la biomasa de ratones como variable respuesta y las variables explicativas que considere apropiadas. Ranquee los modelos en función de su AIC y seleccione modelos candidatos. 
+
+```{r}
+#modelo aditivo completo (veo el VIF)
+m1 <- lm(ratones ~ lluvia+predadores+cobertura+semillas, Ratones)
+car:::vif(m1)
+```
+
+```{r}
+# Evaluo posibles datos atípicos en el m1 que podrían afectar la selección
+e<-resid(m1) # residuos
+re<-rstandard(m1) #residuos estandarizados
+pre<-predict(m1) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+summary(m1)
+```
+  
+- Realice una selección de modelos “hacia atrás”. Evalúe supuestos y utilice algún criterio apropiado para ir reduciendo las variables ingresadas en el modelo. Seleccione el mejor modelo a su juicio, fundamentando su decisión.  
+
+```{r}
+drop1(m1,test="F") # Interprete lo que hace la funcion (pueden ayudarse con el help)
+# que variable eliminarian?
+```
+
+```{r}
+#...continuamos
+m2 <- update(m1, . ~ .- predadores)
+e<-resid(m2) # residuos
+re<-rstandard(m2) #residuos estandarizados
+pre<-predict(m2) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED m2")
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+# para confirmar que eliminar la variable no afecta la capacidad explicativa del modelo
+anova(m1,m2)
+```
+
+```{r}
+# modelo 
+summary(m2)
+```
+
+```{r}
+# corresponde elinar alguna nueva variable del m2? SI? Por qué?
+drop1(m2,test="F")
+# elimino cobertura
+```
+
+```{r}
+m3 <- update(m2, . ~ .- cobertura)
+e<-resid(m3) # residuos
+re<-rstandard(m3) #residuos estandarizados
+pre<-predict(m3) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED m3" )
+abline(0,0)
+qqnorm(e)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+anova(m1,m2,m3) # m1 vs m2 y m2 vs m3
+```
+
+```{r}
+summary(m3)
+```
+
+```{r}
+# ¿semillas queda en el modelo o sale?
+drop1(m3,test="F") # cuanto cambia el AIC si elimino semillas? La dejamos o la sacamos?
+```
+
+```{r}
+# ¿Existe interaccion entre lluvia y semillas?
+m4 <- update(m3, . ~ .+ lluvia:semillas)
+e<-resid(m4) # residuos
+re<-rstandard(m4) #residuos estandarizados
+pre<-predict(m4) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED m4" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+anova(m3,m4)
+car::vif(m4)
+```
+```{r}
+# ¿Y si excluimos semillas?
+m5 <- update(m3, . ~ .- semillas)
+e<-resid(m5) # residuos
+re<-rstandard(m5) #residuos estandarizados
+pre<-predict(m5) #predichos
+par(mfrow = c(1, 2))
+plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gráfico de dispersión de RE vs PRED - m5" )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+# Y si no quisiera incluir en el mismo modelo lluvia y semillas? 
+# comparar modelos alternativos
+m_lluvia <- lm(ratones ~ lluvia+predadores+cobertura, Ratones)
+m_semillas <- lm(ratones ~ semillas+predadores+cobertura, Ratones)
+AIC(m_lluvia, m_semillas)
+```
+
+# Mas sobre comparacion de modelos
+
+```{r}
+# CMe 
+CMe <- round(c(summary(m1)$sigma^2,summary(m2)$sigma^2,summary(m3)$sigma^2,summary(m4)$sigma^2,summary(m5)$sigma^2), 2)
+# R2 (no para comparar entre modelos)
+R2 <- c(summary(m1)$r.squared, summary(m2)$r.squared, summary(m3)$r.squared, summary(m4)$r.squared, summary(m5)$r.squared)
+# R2 ajustado
+R2aj <- c(summary(m1)$adj.r.squared, summary(m2)$adj.r.squared, summary(m3)$adj.r.squared, summary(m4)$adj.r.squared, summary(m5)$adj.r.squared)
+#AIC
+AIC <- c(AIC(m1), AIC(m2), AIC(m3), AIC(m4), AIC(m5))
+# Nombre modelo (para generar un data frame bonito)
+modelo <- c(1,2,3,4,5)
+comp <- cbind(modelo, CMe, round(R2,2), round(R2aj,2), AIC)
+colnames(comp)<-c("modelo", "CMe", "R2", "R2 ajust", "AIC")
+comp
+```
+
+# Validacion cruzada
+
+```{r}
+# LOO CV
+library(caret)
+# comparo mis cuatro modelos candidatos
+# agrego un m5, muy simple
+# Indicamos la función para el entrenamiento 
+train.control<-trainControl(method = "LOOCV") 
+#train.control<-trainControl(method = "repeatedcv",repeats = 5)
+# Entrenamos (estimamos) el modelo  (n modelos con n-1 observaciones) 
+m1loo <- train(ratones ~ lluvia+predadores+cobertura+semillas,data = Ratones, method ="lm",trControl= train.control)
+m2loo <- train(ratones ~ lluvia+cobertura+semillas,data = Ratones, method ="lm",trControl= train.control)
+m3loo <- train(ratones ~ lluvia+semillas,data = Ratones, method ="lm",trControl= train.control)
+m4loo <- train(ratones ~ lluvia*semillas,data = Ratones, method ="lm",trControl= train.control)
+m5loo <- train(ratones ~ lluvia,data = Ratones, method ="lm",trControl= train.control)
+```
+summary(m1loo)
+```{r}
+# resultados
+print(m1loo)
+print(m2loo)
+print(m3loo)
+print(m4loo)
+print(m5loo)
+```
+
+```{r}
+#dataframe con los resultados
+b
+```
+
+-Compare los modelos candidatos. Explore los graficos de residuos parciales. Seleccione el mejor modelo a su juicio fundamentando su decision y concluya sobre la importancia de los factores de control de la comunidad de ratones granivoros de desierto.
+
+# Interpretacion de los resultados
+
+Analicemos m3
+
+```{r}
+summary(m3)
+vif(m3)
+# escriba la ecuacion final del modelo
+# concluya, control bottom-up o top-down?
+```
+
+```{r}
+#grafico 3d modelo final
+library(rgl)
+summary(Datos) #lluvia de 1 a 9, semillas de 3 a 9
+scatter3d(ratones ~ lluvia+semillas, fill=FALSE, data=Ratones)
+library(sjPlot)
+# select only levels 3, 6 y 9 from continuous semillas
+plot_model(m3, type = "pred", terms = c("lluvia", "semillas [3, 6, 9]"))
+plot_model(m3, type = "pred", terms = c("semillas", "lluvia [1, 5, 9]"))
+```
+
+```{r}
+#validación
+# Valores observados vs valores predichos por el modelo
+p<-ggplot(Ratones, aes(x =ratones , y = predict(m3))) + geom_point(size=2)
+p + geom_abline(intercept = 0, slope =1) +  ggtitle("Predichos vs observados Modelo 3")
+cor(predict(m3),Ratones$ratones)
+(cor(predict(m3),Ratones$ratones))^2
+```
+
+```{r}
+# Residuos parciales
+library(faraway)
+prplot(m3,1) #Datos vs lluvia controlando semillas
+prplot(m3,2) #Datos vs semillas controlando por lluvia
+```
+
+```{r}
+# estimación y comparación de la magnitud del efecto
+lluviaLCL <- round(confint(m3)[2],3)
+lluviaHCL <- round(confint(m3)[5],3)
+semillaLCL <- round(confint(m3)[3],3)
+semillaHCL <- round(confint(m3)[6],3)
+library(sjPlot)
+#tab_model(m3) #sjPlot
+```
+# interpretamos coeficientes parciales
+
+*Para el caso de la lluvia, un incremento unitario en la lluvia estara asociado con un incremento entre `r lluviaLCL` y `r lluviaHCL` en la abundancia de ratones ajustando por las semillas.*  
+
+*Para el caso de las semillas, un incremento unitario en las semillas estara asociado con un incremento entre `r semillaLCL` y `r semillaHCL` en la abundancia de ratones ajustando por las condiciones de lluvia.*
+
+*Cabe destacar que el efecto de las semillas es marginal.*    
+
+```{r}
+library(lm.beta)
+lm.beta(m3) #coeficientes estandarizados
+```
+
+*Estudiar los coeficientes estandarizados nos permite evaluar la magnitud de efecto de ambos factores. Vemos que la lluvia es 2 veces mas importante sobre la abundancia de ratones que las semillas.*  
+
+```{r}
+# centrado
+#Modelo 3_c: idem 3 pero con centrado en la media de las X
+Ratones$lluvia_c <- Ratones$lluvia- mean(Ratones$lluvia)
+Ratones$semillas_c <- Ratones$semillas- mean(Ratones$semillas)
+m3_c <- lm(ratones ~ lluvia_c+semillas_c, Ratones)
+summary(m3_c)
+```
+
+```{r}
+#tab_model(m3_c) #sjPlot
+```
+
+```{r}
+# Seleccion automatica
+library(MuMIn)
+# modelo aditivo
+dredge(lm(ratones ~ lluvia+predadores+cobertura+semillas, data = Ratones, na.action = "na.fail"))
+# modelo con interaccion
+dredge(lm(ratones ~ lluvia*predadores*semillas, data = Ratones, na.action = "na.fail"))
+# Modelos candidatos? dónde se ubica nuestro "m3"?
+# que podemos concluir en base a todos estos criterios acerca de la capacidad explicativa
+# de cada una de las variables?
+# se le ocurren otras cosas para seguir probando?
+```
+
+## Problema 9. Asociación entre rasgos paternos y tamaño de la bola de cría en el escarabajo estercolero *Sulcophanaeus* sp
+
+Los rasgos de los padres suelen afectar el desarrollo de rasgos de su cría. Un mecanismo por el cual los padres pueden influir en el fenotipo de la descendencia es a través del nivel de cuidado que proporcionan. Sulcophanaeus sp (Coleoptera, Scarabaeidae) es un escarabajo estercolero con cuidados biparentales. El macho construye una bola de cría formada por estiércol, en la que la hembra deposita un huevo, que al eclosionar se alimenta de esa masa. Se sabe que cuanto mayor es el tamaño de la bola de cría, mayor es la disponibilidad de alimento y mayor el desarrollo de la cría, pero se desconocen los factores que regulan el tamaño de las bolas de cría. Los machos presentan además variaciones en el tamaño de sus cuernos, que utilizan durante las peleas por las hembras permitiendoles incrementar su éxito reproductivo.  
+Se desea probar la hipótesis de que ambas características morfológicas de los machos (tamaño corporal y la longitud de los cuernos) afectan en forma sinérgica el tamaño de las bolas de cría. Para demostrarlo se capturaron ejemplares adultos en la provincia de Buenos Aires y se les midió el largo corporal total (LT) y del cuerno (LC), ambos en mm. Se seleccionaron machos de manera de cubrir el rango de combinaciones de tamaños y se los cruzó con una hembra de tamaño promedio. Cada pareja fue mantenida en una cámara de cría individual con estiércol de vaca. Se obtuvieron 75 bolas de cría, a las que se les determinó el peso seco (PS),  en gramos. Los resultados se encuentran en el archivo *escarab.csv*
+
+- Explore los datos. 
+
+```{r}
+escarab <- read.csv("/home/jose/Documents/materias/biome2/2019/tps/tp4/escarab.csv",header=T)
+summary(escarab)
+plot(escarab)
+```
+- Plantee el modelo que permita poner a prueba la hipótesis de investigación.  
+```{r}
+m1= lm(PS ~ LT*LC, data=escarab)
+summary(m1)
+anova(m1)
+par(mfrow = c(1, 3))
+plot(m1, which=c(1,2,4))
+par(mfrow = c(1, 1))
+```
+
+- Estudie si existen violaciones a los supuestos del modelo propuesto.  
+```{r}
+shapiro.test(residuals(m1))
+#Hay un outlier. Cambia mucho si lo sacamos?
+m2= lm(PS ~ LT*LC, data=escarab[-17,])
+summary(m2) #no demasiado, lo dejamos
+library(car)
+vif(m1) #da horrible
+```
+
+- ¿Qué cambia si centra los valores de LT y LC con respecto a sus respectivas medias?  
+```{r}
+#y si centramos?
+escarab$LTc<-escarab$LT-mean(escarab$LT)
+escarab$LCc<-escarab$LC-mean(escarab$LC)
+m1c= lm(PS ~ LTc*LCc, data=escarab)
+summary(m1c)
+#la interaccion no cambia, los efectos parciales sí
+vif(m1c)
+#centramos? como no miramos los coef parciales porq la int es signif, podemos elegir no centrar
+```
+
+- Ajuste el modelo y concluya.  
+```{r}
+#graficos
+library(rgl)
+data(iris)
+sep.l <- iris$Sepal.Length
+sep.w <- iris$Sepal.Width
+pet.l <- iris$Petal.Length
+#scatter3d(x = sep.l, y = pet.l, z = sep.w, groups = iris$Species,
+#          surface=FALSE, grid = FALSE, ellipsoid = TRUE,
+#          surface.col = c("red", "blue", "green"))
+#interaccion
+library(rockchalk)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 0)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 20)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 40)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 60)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 80)
+mcGraph3 (escarab$LT, escarab$LC , escarab$PS, interaction=TRUE, theta = 100)
+```
+
+- Interprete el R2 y estudie la relación entre los valores observados de PS en bolas de cría y los predichos por el modelo.  
+```{r}
+summary(m1)
+summary(m2)
+summary(m1c)
+plot(predict(m1),escarab$PS, ylab="PS Observados", xlab="PS Predichos")
+abline(0,1, col="red")
+```
+- Grafique el PS esperado de las bolas de cría según el LC del macho para tres tamaños de LT (media $\pm$ DE).  
+```{r}
+#Como estudiamos la interaccion? Graficamente
+#Calculamos la ecuacion de PS en función de LC para 3 valores de LT
+#media LT = 17, DE=1, elijo 16, 17 y 18 mm y calculo PS vs LC (ver diapo 22 teo8)
+plot(escarab$LC,escarab$PS, xlab="LC (mm)", ylab="PS (g)")
+abline(1.091,0.4228, col="blue")
+abline(0.1488,0.5771, col="green")
+abline(-0.7934,0.7314, col="red")
+text(14, 6, "chicos", srt=0.2, col = "blue")
+text(14, 8, "med", srt=0.2, col = "green")
+text(14, 9, "grandes", srt=0.2, col = "red")
+```
+
+- Otro investigador desea realizar el mismo ensayo, pero quiere diferenciar entre dos especies de Sulcophanaeus. Escriba la nueva ecuación del modelo en parámetros indicando qué significan en el contexto de esta experiencia.  
+
+- ¿Cómo se modificaría el modelo si el PS de cada bola se hubiese determinado tres veces. ¿Y si la experiencia se realizaba en 5 “tandas” distintas?

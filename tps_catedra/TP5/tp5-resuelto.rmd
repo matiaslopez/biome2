@@ -1,0 +1,1126 @@
+---
+title: "Biometría II  \nTP Nº 5  \nDiseño Experimental e Introducción a Modelos Mixtos: Diseños en Bloque, de Factores Anidados y Medidas Repetidas"
+output: pdf_document
+latex_engine: pdflatex
+font-family: Arial
+documentclass: article
+geometry: margin=1.5cm
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE,size=10, tidy=TRUE, tidy.opts=list(width.cutoff=65))
+```
+
+Hasta ahora hemos trabajado en modelos que provenían de estudios observacionales o experimentales. El denominador común de estos estudios es que los niveles de los factores bajo estudio siempre eran elegidos por el investigador. Incluso factores con niveles que no eran fijados por el investigador (por ejemplo, “sexo”) eran agregados a los modelos porque interesaba conocer específicamente los efectos de los niveles de dicho factor. En estas situaciones, el objetivo siempre es comparar los promedios de los niveles (cuando se trata de VE cualitativas) o los coeficientes con los que se relacionan con la VR (en la VE cuantitativas). Ahora bien... si tenemos una variable explicatoria cualitativa (factor) y si los niveles elegidos no nos interesan particularmente sino que provienen de una población de posibles niveles del factor? ¿Y si lo que nos interesa es estudiar la variabilidad entre los niveles? En estos casos, estamos bajo el estudio de lo que llamaremos VE de efectos *aleatorios*). ¿Y si en un modelo hay VE de efectos aleatorios y VE de efectos fijos? En ese caso estamos trabajando con *modelos mixtos*. Si la variable respuesta sigue una distribución normal y tenemos un modelo mixto, entonces estamos ante un *modelo lineal general* mixto. Si la variable respuesta sigue alguna distribución distinta (por ejemplo Binomial, Poisson) y tenemos un modelo mixto, entonces estamos bajo un *modelo lineal generalizado mixto*.
+
+# Parte A: Diseño Experimental e Introducción a Modelos Mixtos
+
+## Problema 1. Entrada en calor  
+
+Para entrar en calor, te proponemos que respondas para el siguiente enunciado:   
+
+Se ha sugerido que la diferenciacion genetica de especies emparentadas de crustaceos del genero *Artemia* (habitantes de cuerpos de agua con elevada salinidad) podria relacionarse con diferencias en el contenido y la distribucion de la heterocromatina. Como primera aproximacion se procedio a estudiar la variabilidad intraespecifica en poblaciones de la region pampeana, para lo cual se eligieron al azar y analizaron 15 lagunas dentro de esta  region. En cada una se seleccionaron aleatoriamente 10 individuos pertenecientes a la especie *A. franciscana*. Se fotografiaron 5 celulas interfasicas de cada individuo y a partir de las celulas ampliadas se cuantifico el porcentaje de heterocromatina por triplicado. El porcentaje de herocromotina se obtiene dividiendo la longitud de las bandas de heterocromatina por la longitud total del cromosoma correspondiente.
+
+- Cómo modelarias la variable respuesta a partir del disenio, antes de ver los datos.  
+
+\[\%Heterocromatina=Long \: Bandas \: Heterocromatina/LongTotal\]
+
+\[\%Heterocromatina\sim N(\mu,\sigma)\]
+
+- Qué tipo de VEs involucra (efectos fijos, efectos aleatorios).  
+
+Cuerpo de Agua; a=1:15; cualitativa aleatoria  
+Individuos; b=1:10; cualitativa aleatoria  
+Celulas; c=1:5; cualitativa aleatoria  
+Determinaciones; d=1:3
+
+- Qué tipo de modelo es.  
+
+Modelo Aleatorio, Disenio completamente anidado.  
+
+\[Y_{ijkl}=\mu+A_i+B_{j(i)}+C_{k(j(i))}+\epsilon_{ijkl}\]
+
+
+$$A_i \sim NID(0,\sigma_a^2)$$
+
+$$B_i \sim NID(0,\sigma_b^2)$$
+
+$$C_i \sim NID(0,\sigma_c^2)$$
+
+$$\epsilon_{ijkl} \sim NID(0,\sigma^2)$$  
+
+## Problema 2. Practiquemos un poco, hagamos un cuadro  
+
+Independientemente del ensayo, ¿estas VE serían incluidas en un modelo explicatorio como de efectos fijos o aleatorios? (pensemos en generalidades y no en situaciones particulares):  
+
+Droga suministrada:             Fijo  
+Fertilizante aplicado:          Fijo  
+Camada:                         Aleatorio  
+Sujetos:                        Aleatorio  
+Día del experimento:            Aleatorio  
+Temperatura:                    Fijo  
+Muestra:                        Aleatorio  
+Placa de petri:                 Aleatorio  
+Tubo de ensayo:                 Aleatorio  
+Parcela:                        Aleatorio  
+Sexo:                           Fijo  
+Edad:                           Fijo  
+
+
+## Problema 3. Disenios experimentales
+
+Para cada uno de los casos de estudio planteados, responda las preguntas
+correspondientes.  
+
+**Caso 1**. En el marco del proyecto “Asistencia técnica para la recuperacion y revitalizacion de los bosques templados de Chile, con enfasis en los *Nothofagus* caducifolios”, ejecutado por la Corporacion Nacional Forestal de Chile (CONAF), se quiere controlar al coleoptero *Brachysternus prasinu* que causa intensas defoliaciones sobre ejemplares de *Nothofagus antarctica* (ñire) en el Centro y Sur de Chile. Para ello se llevo a cabo un experimento a fin de determinar la eficacia de dos insecticidas para el control de esta plaga, en un bosque natural de ñire. El grafico muestra distintos disenios experimentales, donde las x representan a los arboles y los simbolos corresponden a los distintos tratamientos (dos insecticidas y un control). En cada arbol se registro la superficie defoliada en 10 hojas seleccionadas al azar. Tengan en cuenta que:  
+
+Disenio a): Cada rectangulo representa una parcela de una hectarea. A cada parcela se le asigna al azar un tratamiento y de cada parcela se seleccionan al azar 5 árboles para efectuar las mediciones.  
+Disenio b): Similar a a) pero por duplicado.  
+Disenio c): Se seleccionan al azar 5 arboles para cada tratamiento.  
+
+![Disenios Experimentales](/home/pangolin/Documents/materias/biome2/2018/tps/tp5/parteA/disenio.png)
+
+¿Se trata de un estudio observacional o experimental? Para cada disenio identifique la unidad experimental, la variable respuesta, la cantidad de replicas y el/los tipo/s de VE y sus niveles. ¿Como es la relacion entre VE (cruzados, anidados)? ¿Como especificaria la estructura de agrupamiento de los datos en R?.  
+
+Disenio a)  
+
+*No se puede discernir entre el efecto de parcela e insecticida. El disenio esta mal.*  
+
+Disenio b)    
+
+*DBA.*    
+*VR: area defoliada (cuantitativa continua)*  
+*Insecticida; 3 niveles; cualitativa fija*  
+*Bloque; 2 niveles; cualitativa aleatoria *  
+*Arboles; 5 niveles; cualitativa aleatoria; anidada en Bloque x Insecticida*   
+
+*U.E: Parcela.*  
+*Replicas: 2.*  
+
+*en R: lmer(area ~ insecticida + (1 | Bloque) + (1 | arbol), datos)*
+
+
+Diseño c)  
+
+*Disenio anidado.*    
+*VR: area defoliada (cuantitativa continua)*  
+*Insecticida; 3 niveles; cualitativa fija*  
+*Arboles; 5 niveles; cualitativa aleatoria anidada en Insecticida*   
+
+*U.E: arbol.*  
+*Replicas: 5.*  
+
+*en R: lmer(area ~ insecticida + (1 | arbol), datos)*  
+
+**Caso 2**. En la provincia de Chubut existen areas de bosque nativo que han sufrido un gran proceso de degradacion como consecuencia de incendios. Estas perturbaciones han afectado a los bosques de *Austrocedrus chilensis* (Cipres de las Cordilleras) presentes en los alrededores del Lago Puelo. Con el fin de restaurar estos bosques con plantines de cipres se llevo a cabo un experimento a campo a fin de evaluar distintas proporciones de biosolidos en el suelo. Se espera encontrar la proporcion que acelere el crecimiento y mejore la calidad de las plantas una vez que estas sean transplantadas en la zona a restaurar. El ensayo se efectuo en una ladera de caracteristicas homogeneas al este del lago Puelo . Los plantines se dispusieron en hileras norte-sur y se definieron 20 parcelas de 10 plantas cada una. Cada parcela fue asignada al azar a uno de los siguientes tratamientos, de modo tal de obtener un disenio balanceado: I. Sin biosolidos; II. 25% de biosolidos; III. 50% de biosolidos; IV. 75% de biosolidos. Al anio de establecida la plantacion se midio la altura de cada una de las plantas.  
+
+- Identifique la unidad experimental, la variable respuesta, el tipo de VE (fijos/aleatorios) y sus niveles, la cantidad de replicas y el tamanio total de la muestra. ¿Cómo especificaria el agrupamiento de los datos en R?.  
+
+*VR: Altura de cada planta al anio de establecida la plantacion*  
+*VE: -Proporcion de biosolidos en el suelo. (Cualitativa. Fija. Niveles: 4. Sin biosolidos; 25% de biosolidos;  50% de biosolidos; 75% de biosolidos).*  
+*-Parcelas (Cualitativa. Aleatoria. Niveles: 1:20)*    
+*UE: 1 parcela con 10 plantas de cipres en este del Lago Puelo.*  
+*replicas: 5*  
+*Disenio anidado*  
+*en R: lmer(altura~biosolidos+(1|parcela), Datos)*  
+
+- El siguiente es un plano del terreno con las 20 parcelas. Asigne de manera conveniente los tratamientos a las parcelas.  
+
+![Disenios Experimentales2](/home/pangolin/Documents/materias/biome2/2018/tps/tp5/parteA/disenio2.png)
+
+*Se asignan de manera aleatoria entre todas las parcelas.*  
+
+- ¿Qué cambiaría en el diseño si existiese en el campo experimental un gradiente de humedad norte-sur?.   
+*En ese caso hay que asegurarse que transversalmente al gradiente se ubiquen al azar una replica de cada tratamiento*  
+
+**Caso 3**. En Pergamino se desea evaluar el efecto de dos dosis del herbicida Round-up sobre la comunidad de aracnidos en cultivos de soja. Para ello, se divide un lote de 90 ha en 9 parcelas de igual tamanio. Como de norte a sur existe una pendiente pronunciada, los investigadores deciden aplicar un disenio de bloques (ver esquema): un bloque corresponde a la loma, otro a la media loma y el tercero al bajo. En cuanto a los tratamientos, las parcelas que limitan al oeste corresponden al bloque control (50 l/m2 de agua sin Rond-up), las siguientes tres al bloque dosis 1 (5l de herbicida en 50 l/m2) y las ultimas tres, que limitan al este, corresponden al bloque dosis 2 (15 l de herbicida en 50 l/m2). En cada parcela se registra la abundancia de aracnidos.
+
+![Disenios Experimentales3](/home/pangolin/Documents/materias/biome2/2018/tps/tp5/parteA/disenio3.png)
+
+Identifique la unidad experimental, la unidad de observacion, la variable respuesta, el tipo de VE y sus niveles y la cantidad de replicas. ¿Como especificaria el agrupamiento de los datos en R? Discuta el disenio experimental. Si considera que el disenio es incorrecto plantee un disenio apropiado.  
+
+*VR: Abundancia de aracnidos, cuantitativa continua*  
+*VE: -Bloque (cualitativa, efecto aleatorio,3 niveles: Loma, media loma y bajo)*  
+*-herbicida (cualitativa, efecto fijo, 3 niveles: control, dosis 1 y dosis 2)*    
+*UE: Cada parcela condicionada por el bloque*  
+*UO: Cada parcela*  
+*replicas: 3*  
+*Disenio bloques al azar*  
+*en R: modelo<- lmer(abundancia~dosis + (1| bloque), datos)*  
+
+
+
+**Caso 4**. Un investigador esta interesado en comparar la densidad de oligoquetos en suelos de sistemas naturales (SN) y de sistemas agricolas convencionales (SAC) en el sudeste bonaerense. Supongamos tres abordajes metodologicos posibles, definidos por los recursos de los que dispone:
+
+
+En cada caso, identifique la unidad experimental, la unidad de observacion, la variable respuesta, el tipo de VE y sus niveles y la cantidad de replicas, así como la poblacion sobre la que efectua la inferencia.  
+
+- Elige al azar 10 lotes pertenecientes a SN y 10 lotes con SAC ubicados en distintas
+localidades del sudeste bonaerense.  
+
+*VR: densidad de oligoquetos*  
+*VE: tipo de suelo (cualitativa fija, 2 niveles: SN y SAC)*    
+*UE: Lote*  
+*UO: Lote, tengo una obs por lote*  
+*replicas: 10*  
+*Disenio completamente aleatorizado*  
+*poblacion sobre la que efectua la inferencia: La densidad de oligoquetos de todos los lotes SN y SA de las localidades del sudeste bonaerense*  
+*en R: lm(densidad~tipo de suelo, bd)*  
+
+- En Balcarce selecciona 10 lotes con SN de todos los lotes con SN existentes en la
+localidad y 10 lotes con SAC de todos los lotes con SAC.  
+
+*VR: densidad de oligoquetos*  
+*VE: tipo de suelo (cualitativa fija, 2 niveles: SN y SAC)*    
+*UE: Lote*  
+*UO: Lote, tengo una obs por lote*  
+*replicas: 10*  
+*Disenio completamente aleatorizado*  
+*poblacion sobre la que efectua la inferencia: La densidad de oligoquetos de todos los lotes SN y SAC de la localidad de Balcarce*  
+*en R: lm(densidad~tipo de suelo, bd)*  
+- En cierta localidad selecciona un lote con SN de todos los lotes con SN existentes
+en la localidad y un lote con SAC de todos los lotes con SAC. De cada lote extrae 10
+muestras de suelo.  
+
+*VR: densidad de oligoquetos*  
+*VE: tipo de suelo (cualitativa fija, 2 niveles: SN y SAC), lote (cualitativa aleatoria)*    
+*UE: Lote*  
+*UO: Muestras de suelo (no son independientes entre si, vienen de la misma U.E)*  
+*replicas: 1*  
+*Disenio anidado*  
+*poblacion sobre la que efectua la inferencia: La densidad de oligoquetos del único lote elegido de SN y SAC de cierta localidad*  
+*en R: lmer(densidad~tipo de suelo +(1|lote, bd)*  
+
+# Parte B: Diseño en Bloques y Modelos con Factores Anidados
+
+## Problema 4. Modelos condicionales y marginales 
+
+Con el objetivo de estudiar el efecto del suministro de una dieta mixta compuesta por alfalfa y avena sobre la absorcion de glucosa y resistencia a la insulina en equinos, se desarrollo una experiencia en un grupo de 16 equinos, todos clinicamente sanos. Se separaron al azar en dos grupos, y los animales de cada grupo fueron sometidos a un regimen alimenticio y de manejo distinto:  
+Lote A (A campo): 9 equinos fueron alimentados exclusivamente con pasturas naturales.  
+Lote B (Estabulados): 7 equinos fueron alimentados en corral con heno de alfalfa y grano de avena.   
+
+Luego de dos meses de tratamiento se efectuo en cada animal la prueba de tolerancia oral a la glucosa (PTOG). La prueba consiste en administrar un concentrado de glucosa y tomar muestras de sangre cada 30 minutos luego del suministro durante 8 horas. Se compararon las curvas de glucemia de ambos grupos. Base de datos en *PTOG.txt*.  
+
+- Identifique la unidad experimental, la variable respuesta, factores y niveles y condicion de fijos o aleatorios. ¿Dónde interviene el azar en este ensayo?.  
+
+*VR: glucemia medida por PTOG*  
+*VE: alimentacion (cualitativa fija, 2 niveles: estabulado, pastura, cruzada con tiempo), tiempo (cualitativa fija, 4 niveles: 0,30, 60, 90, cruzada con tiempo), equino (cualitativa aleatoria, 16 niveles, anidada en tratamiento)*    
+*UE: equino*  
+
+- Plantee el modelo condicional y marginal en terminos estadisticos y del problema. Compare ambas formas de modelar la estructura de agrupamiento de los datos.    
+
+## modelo condicional
+
+$$Y_{ijk}=\mu+\alpha_i+B_{j(i)}+\gamma_k+\alpha \gamma_{ik}+\epsilon_{ijk}$$
+
+$$B_{j(i)} \sim NID(0,\sigma_{equinos}^2)$$
+
+$$\epsilon_{ijk} \sim NID(0,\sigma^2)$$ 
+
+$$i: 1:2$$
+$$j|i_1: 1:9$$
+$$j|i_2: 1:7$$
+$$k: 1:4$$
+
+## modelo marginal
+
+$$Y_{ijk}=\mu+\alpha_i+\beta_k+\alpha \beta_{ik}+\epsilon_{ijk}$$
+
+$$B_{j(i)} \sim NID(0,\sigma_{equinos}^2)$$
+
+$$\epsilon_{ijk} \sim NID(0,\sum \: _j)$$ 
+
+$$i: 1:2$$
+$$j|i_{=1}: 1:9$$
+$$j|i_{=2}: 1:7$$
+$$k: 1:4$$
+
+$$matriz \: simetria \: compuesta = 
+\begin{pmatrix}{}
+ 1 & \rho & \rho & \rho\\
+\rho & 1 &\rho & \rho\\
+\rho & \rho & 1 & \rho\\
+\rho & \rho & \rho & 1\\
+\end{pmatrix} * 
+\sigma^2$$
+
+*En el modelo condicional se explicitan terminos aleatorios y nos permite estimar componentes de varianza mientras que en los modelos marginales no se incluyen factores aleatorios y la estructura de los datos se especifica en la matriz de varianza-covarianza. Sin embargo, un modelo condicional implica una matriz de varianza-covarianza de simetria compuesta y no siempre es la adecuada para describir un disenio experimental.*  
+
+- Resuelva ambos modelos y evalue los resultados obtenidos con ambos. ¿Con cual de los dos modelos se quedaria?   
+
+```{r}
+library(readxl)
+PTOG <- read_excel('/home/pangolin/Documents/materias/biome2/2020/tps/tp5/nuevo/PTOG.xlsx')
+str(PTOG)
+```
+
+```{r}
+# Equino y Tratamiento como factor
+PTOG$Equino <- factor(PTOG$Equino)
+PTOG$Tratamiento <- factor(PTOG$Tratamiento)
+PTOG$Tiempo <- factor(PTOG$Tiempo)
+```
+```{r}
+library(dplyr)
+# lo ordeno para ver todas las observaciones de los equinos
+ordenado <- arrange(PTOG, Equino, Tiempo)
+head(ordenado, 8)
+```
+
+```{r}
+# Medidas repetidas
+# Spaguetti plots
+library(ggplot2)
+p <- ggplot(PTOG, aes(Tiempo, Glucemia, group = Equino))
+p + geom_point(aes(color = Equino)) +
+    geom_line(aes(color = Equino)) + facet_grid (. ~ Tratamiento)+ labs(x = "Tiempo (minutos)", 
+                                                                        y = "Glucemia (mg/dl)")
+```
+
+## modelo condicional
+
+```{r}
+#### Modelo condicional usando un factor aleatorio para inducir la estructura de correlación
+library(nlme)
+m1a <- lme(Glucemia ~ Tratamiento * Tiempo,  random = ~ 1 | Equino, PTOG)
+summary(m1a)
+```
+
+```{r}
+#devuelve ef fijos
+a=fitted(m1a, level = 0)
+a[names(a)=='AL']
+```
+
+```{r}
+#devuelve ef fijos + aleatorios
+b=fitted(m1a, level = 1)
+b[names(b)=='AL']
+```
+
+```{r}
+#miramos el efecto aleatorio solo del primer equino
+ranef(m1a)[[1]][1]
+#vemos que la diferencia es la misma
+b[names(b)=='AL']-a[names(a)=='AL']
+```
+
+```{r}
+library(mgcv)
+#extraemos mariz var-covar para el primer equino
+extract.lme.cov2(m1a,PTOG,start.level=1)[[1]][1]
+#obtenemos matriz var-covar de otra manera
+VarCorr(m1a)
+```
+
+```{r}
+#la correlacion entre 2 observaciones del mismo equino
+(icc<-22.83^2/(22.83^2+13.5^2))
+```
+
+## modelo marginal
+
+```{r}
+#### Modelo marginal usando simetría compuesta
+m2 <- gls(Glucemia ~ Tratamiento * Tiempo,  correlation = corCompSymm(form = ~ 1 | Equino), PTOG)
+summary(m2)
+```
+
+- compare el modelo marginal con simetria compuesta y el condicional. ¿Que puede decir acerca de los coeficientes de los modelos?.   
+
+*ambos cuando la distribucion propuesta es normal, estiman de igual manera los coeficientes fijos. el condicional induce una matriz simetria compuesta pero exlicita factores aleatorios. el marginal no incluye factores aleatorios pero la estructura esta dada en la matriz.* 
+
+-Y acerca de las varianzas? Calcule la varianza total no explicada por cada modelo.  
+
+*el condicional permite calcular componentes de varianza, pero la suma de las varianzas hace a la varianza estimada por el modelo marginal.*  
+
+```{r}
+(var_tot_condicional<- (22.83^2+13.50^2))
+(var_tot_marginal<- 26.52^2) 
+```
+
+-¿Cuál es el equivalente al ICC en el modelo marginal?
+
+*el equivalente es el $\rho$ (Rho, se ve en el summary).*  
+
+## tambien podriamos modelar varianzas, dejamos un ejemplo
+
+```{r}
+#### BONUS ROMPE-CABEZAS
+# con lme() podemos incluso combinar estructuras marginales y condicionales. Por ej. podriamos combinar un efecto aleatorio de Equino con una estructura de modelado de varianza segun el Tiempo
+m3 <- lme(Glucemia ~ Tratamiento * Tiempo,  random = ~ 1 | Equino, weights= varIdent(form = ~1 | Tiempo) ,PTOG)
+summary(m3)
+```
+
+## Problema 5. Habito de fumar  
+
+El habito de fumar suele provocar desordenes en muchos aspectos de la vida del ser humano. Una de las consecuencias reportadas es la alteracion en los patrones de descanso. En un estudio se investigo la asociacion entre el habito de fumar y las horas de suenioo diarias (descanso), con el proposito de evaluar si el desorden en el descanso difiere segun el sexo. Para ello se seleccionaron al azar hombres y mujeres adultos fumadores y no fumadores (tres de cada combinacion). A cada uno de ellos se le determino el numero de horas de suenio en cuatro dias cualesquiera elegidos al azar. Base de datos en *HF.txt*.  
+
+- Identifique: tipo de estudio (observacional/experimental), variable respuesta, unidad experimental o unidad de observacion, factores y niveles, fuentes de variacion, tipo de factores (fijo/aleatorios, cruzados/anidados), disenio empleado, fuentes de variacion que aportan a la varianza de Y.  
+
+*VR: Suenio diario (horas)*   
+*VE: Sexo, cualitativa fija (2 niveles, cruzada con habito), habito fumar, cualitativa fija (2 niveles, cruzada con sexo), Individuo, cualitativa aleatoria (12 niveles, anidado en la interaccion sexo y habito).*  
+*Tipo de estudio: Observacional*  
+*UE: Individuo*  
+*Replicas: 3*  
+
+- Indique el modelo estadistico utilizado, en términos teóricos y aplicado a este experimento.  
+
+\[Y_{ijkl}=\mu+\alpha_i+\beta_j+\alpha\beta_{ij}+B_{k(ij)}+\epsilon_{ijkl}\]
+
+i=1:2, j=1:2, k=1:3, l=1:4
+
+\[B_k \sim NID(0,\sigma^2individuos)\]    
+\[\epsilon_{ijkl} \sim NID(0,\sigma^2)\]
+
+- Escribir el modelo y plantear las hipotesis correspondientes en terminos del problema. Resolver verificando los supuestos y concluir. Realice comparaciones de ser necesario y cuando corresponda. Calcule los componentes de varianza y concluya.
+
+```{r}
+Datos <- read.delim("/home/pangolin/Documents/materias/biome2/2018/tps/tp5/parteB/HF.txt")
+names(Datos)
+```
+
+```{r}
+#Explorando...
+library(ggplot2)
+ggplot(Datos, aes(sexo, horas.suenio, color=Fumador)) +  geom_point() + labs(y="Horas de sueño") 
+#Para calcular las medias de horas sueño para cada combinación de niveles de los dos factores
+(medias.int<-aggregate(horas.suenio~sexo*Fumador, Datos,mean))
+```
+
+```{r}
+#Planteando el modelo...
+#Incorporemos individuo como factor
+#¿De que tipo es? ¿Como se relaciona con los otros factores?
+library(lme4)
+modelo<- lmer(horas.suenio ~ sexo*Fumador + (1|Individuo), Datos)
+```
+
+```{r}
+#Supuestos
+e<-resid(modelo) # residuos de pearson
+pre<-predict(modelo) #predichos
+par(mfrow = c(1, 2))
+plot(pre, e, xlab="Predichos", ylab="Residuos de pearson",main="Gráfico de dispersión de RE vs PRED",cex.main=.8 )
+abline(0,0)
+car::qqPlot(e)
+shapiro.test(e)
+```
+
+```{r}
+#¿Que supuesto quedaria probar? 
+(alfai<-ranef(modelo)$Individuo$'(Intercept)')
+shapiro.test(alfai)
+qqnorm(alfai, cex.main=.8)
+qqline(alfai)
+```
+
+```{r}
+anova(modelo)
+summary(modelo)
+```
+
+```{r}
+#Parte fija
+fitted(modelo)  #predicciones parte fija + aleatoria
+fixef(modelo) #estimacion parametros efectos fijos
+X<-model.matrix(modelo)
+pred_fija<-X %*% fixef(modelo)#predicciones parte fija 
+pred_fija
+```
+
+```{r}
+#Parte aleatoria
+alfai<-ranef(modelo)$Individuo$'(Intercept)' #alfa i de cada individuo
+alfai
+```
+
+```{r}
+#significacion del modelo (comparacion con modelo nulo)
+modelo0<- lmer(horas.suenio ~  (1|Individuo), Datos)
+anova(modelo, modelo0)
+AIC(modelo0,modelo)
+```
+
+```{r}
+#otra posibilidad (incluye Test Wald para coeficientes)
+library(nlme)
+modelo_lme <- lme(horas.suenio ~ sexo*Fumador, random= ~1 | Individuo, data = Datos)
+summary(modelo_lme)
+```
+
+```{r}
+intervals(modelo_lme)
+
+```{r}
+#calculamos icc
+(icc <- (0.03637/(0.03637+0.19389)))
+```
+
+*El ICC es muy bajo, indicando que la variabilidad entre individuos es muy baja comparada con la variabilidad dentro de cada individuo.**  
+
+*Conclusiones: existe una relacion entre el habito de fumar y las disminucion en las horas de suenio. En particular la disminucion de horas es entre 1.84 y 2.94 horas. Esta disminucion en las horas de suenio no depende del sexo de la persona.* 
+
+## Problema 6. Hormona de crecimiento  
+
+Se efectua un experimento para estudiar el efecto de la hormona de crecimiento en ratas jovenes. Se prueba, en forma inyectable, una dosis baja, una dosis alta y un tercer tratamiento, que seria el testigo, consistente en la inyeccion de solucion fisiologica. Se toman 6 camadas de ratas al azar, y tambien al azar se seleccionan tres animales de cada una. Se asignan los tratamientos al azar dentro de cada camada y al cabo de 15 dias se mide el aumento de peso, en decigramos. Base de datos en *Hormona.txt*.
+
+- Identifique la variable respuesta, los factores y sus niveles y su condicion de fijos o aleatorios, cruzados o anidados, justificando su respuesta.  
+
+*VR: Ganancia en peso (dgr)*  
+*VE: Hormona, cualitativa fija (3 niveles), camada, cualitativa aleatoria (6 niveles)*    
+*Tipo de estudio: Experimental*  
+*UE: Cada camada condicionada por la camada.*    
+*Replicas: 6.*    
+
+- Indique el modelo estadistico utilizado, en terminos teoricos y aplicado a este experimento.  
+
+\[Y_{i|k}=\beta_0+\beta_1*Hormona \: baja_i+\beta_2*Hormona \: alta_i+B_k+\epsilon_{ik}\]
+
+i=1:3, k=1:6
+
+\[B_k\sim NID(0,\sigma^2_{camadas})\]    
+\[\epsilon_{ik}\sim NID(0,\sigma^2)\]  
+
+- Describa grafica y estadisticamente los resultados. Realice un grafico de perfiles para estudiar el paralelismo entre bloques. ¿Que significa “paralelismo” en el contexto de este ensayo? ¿Que piensa que ocurriria si los bloques respondieran de forma “No-paralela”?.  
+
+*Paralelismo significa que el comportamiento de cada camada en los tratamientos tenga el mismo sentido biologico. Es decir que si algun tratamiento genera un aumento en la VR ese aumento se vea para la mayoria de las camadas aunque pueden tener diferente magnitud.*  
+
+*Si no se cumple el paralelismo entonces las estimaciones seran incorrectas y no se podra confiar en las predicciones*  
+
+```{r}
+# Abramos el data.frame problema "Hormonas" 
+Datos  <- read.delim("/home/pangolin/Documents/materias/biome2/2018/tps/tp5/parteA/Hormona.txt")
+# Miremos la tabla
+#Pasamos el bloque ("camada") a variable cualitativa
+Datos$Camada <- factor(Datos$Camada)
+# ordeno los niveles (Testigo-Baja-Alta)
+levels(Datos$Hormona)
+Datos$Hormona<-factor(Datos$Hormona,levels=c("Testigo","Baja", "Alta"))
+levels(Datos$Hormona)
+```
+
+```{r}
+library(ggplot2)
+p <- ggplot(Datos, aes(Hormona, GanPeso, color=Camada, group=Camada))
+p + geom_point() +labs(x="Hormona", y="Ganancia en peso (dgr)")+ geom_line()
+```
+
+- Verifique los supuestos del modelo.  
+
+*Supuestos: Homocedasticidad de la VR en cada nivel. VR normal. Independencia de las observaciones.*    
+
+*Y se suma, Normalidad e independencia de la variable de efecto aleatorio.*  
+
+*Ademas es deseable que los “bloques” (Camadas) respondan al tratamiento de manera “paralela”.*    
+
+```{r}
+# Modelo considerando Camadas como de efectos aleatorios
+library(lme4)
+m2 <- lmer(GanPeso ~ Hormona + (1 | Camada), data = Datos)
+#Supuestos
+e<-resid(m2) # residuos de pearson
+pre<-predict(m2) #predichos
+alfai<-ranef(m2)$Camada$'(Intercept)'
+par(mfrow = c(1, 3))
+plot(pre, e, xlab="Predichos", ylab="Residuos de pearson",main="Gráfico de dispersión de RE vs PRED",cex.main=.8 )
+abline(0,0)
+car::qqPlot(e)
+car::qqPlot(alfai)
+par(mfrow = c(1, 1))
+```
+
+```{r}
+shapiro.test(e)
+shapiro.test(alfai)
+library(sjPlot)
+plot_model(m2, type="diag")[[2]]
+```
+
+- Plantee las hipotesis. Resuelva y concluya, asumiendo un nivel de significacion del 5%.  
+
+**Hipotesis**  
+\[Ho_1 -> \beta_1=0\]  
+*No hay influencia de la dosis baja de hormona sobre el aumento de peso.*  
+
+\[Ho_2 -> \beta_2=0\]  
+*No hay influencia de la dosis alta de hormona sobre el aumento de peso.*  
+
+\[Ho_3 -> \sigma^2[\alpha_k] = 0\]  
+*No hay variabilidad en la ganancia de peso entre las diferentes camadas.*  
+
+```{r}
+summary(m2)
+#También se puede usar la library("nlme")
+library("nlme")
+m2b<-lme(GanPeso~Hormona, random=~1|Camada,data=Datos)
+summary(m2b)
+```
+
+```{r}
+intervals(m2b) # para intervalos de confianza de los estimadores
+######  significacion parte fija #####
+m0<- lmer(GanPeso ~  (1|Camada), data=Datos)
+anova(m0,m2)
+AIC(m0,m2)
+```
+
+- Efectue las comparaciones pertinentes y concluya. Represente graficamente los resultados.  
+
+```{r}
+### comparaciones a posteriori #####
+library (emmeans)
+source("/home/pangolin/Documents/funciones2.R")
+(comp <- emmeans(m2, pairwise ~ Hormona))
+```
+
+```{r}
+plot(comp$emmeans, comparisons = TRUE)
+```
+
+*Se observa una ganancia de peso significativa en los grupos suministrados con hormona, ya sea en baja o altas dosis respecto del grupo testigo. No se encontraron diferencias entre los grupos de hormona alta y baja indicando que una mayor dosis no incrementaria la ganancia de peso.*  
+
+
+```{r}
+### Parte Aleatoria #####
+## Grafico de componentes de varianza
+# Simple Pie Chart
+slices <- c(1.53, 0.15)
+lbls <- c("Camadas", "Residual")
+pie(slices, labels = lbls, main="Variance components")
+```
+
+## calculamos icc
+
+```{r}
+(icc <- 1.238824^2/(1.238824^2+0.3913637^2))
+```
+
+*El icc obtenido muestra que la variacion entre camadas es muy grande por lo que explica la mayor parte de la varianza sin explicar. Esto significa que fue una buena decision bloquear por camada y para hacer las predicciones es una buena idea un modelo condicional para hacer predicciones camada-especificas.*  
+
+```{r}
+ranef(m2) #alfa i (BLUP) de cada camada, graficado
+library(sjPlot)
+# efectos aleatorios
+plot_model(m2, type = "re")
+```
+
+```{r}
+#### Predicciones sujeto-especificas: parte fija + aleatoria ######
+coef(m2) #muestra los coef para cada nivel aleatorio (camada)
+fitted(m2)  #predicciones parte fija + aleatoria
+fixef(m2) #estimacion parametros efectos fijos
+X<-model.matrix(m2)
+pred_fija<-X %*% fixef(m2)#predicciones parte fija 
+alfai<-rep(round(ranef(m2)$Camada$'(Intercept)', 4),each=3)
+pred<-data.frame(Datos$Hormona,Datos$Camada, Datos$GanPeso,pred_fija, alfai,round(fitted(m2),4))
+colnames(pred)<-c("Hormona", "camada","GanPes", "pred fija", "efecto aleat", "pred fija + aleat")
+head(pred)
+```
+
+- Resuelva el ejercicio incluyendo “Camadas” como factor fijo. Compare y concluya. ¿Considera que fue efectivo bloquear? Justifique.  
+```{r}
+#Porque no se considero a camada como de efectos fijos?
+m1<-lm(GanPeso~Hormona+Camada, data=Datos)
+summary(m1) 
+anova(m1)
+AIC(m1)
+```
+
+*La decision de poner a camadas como factor fijo o no tiene que ver con una decision metodologica y de la pregunta biologica detras. El costo que tiene ademas es el tener que calcular una mayor cantidad de parametros. Ademas, el encontrar diferencias entre las camadas para con la respuesta a la hormona daria idea que la conclusion depende de la camada.*  
+
+## Problema 7. Albumina  
+
+Se lleva a cabo un estudio a fin de determinar si existen diferencias en la albuminuria media de pacientes diabeticos con mas de cinco anios de evolucion de la enfermedad y diabeticos recientes. Para ello se seleccionan al azar siete individuos de cada grupo y se le efectuan cuatro determinaciones de albumina en orina. Base de datos en *Albumina.txt*.  
+
+- Escribir el modelo y plantear las hipótesis correspondientes en terminos del problema.  
+
+\[Y_{i|k}=\beta_0+\beta_1*Diabeticos_i+\beta_2*Diabeticos \: recientes_i+B_k+\epsilon_{ik}\]
+
+i=1:2, k=1:7
+
+\[B_k\sim NID(0,\sigma^2_{individuo})\]    
+\[\epsilon_{ik}\sim NID(0,\sigma^2)\]  
+
+
+**Hipotesis**  
+\[Ho_1 -> \beta_1=0\]  
+*No hay influencia de ser diabetico hace mas de 5 anios sobre la albumina en orina.*  
+
+\[Ho_2 -> \beta_2=0\]  
+*No hay influencia de ser diabetico reciente sobre la albumina en orina.*  
+
+\[Ho_3 -> \sigma^2[\alpha_k] = 0\]  
+*No hay variabilidad en la albumina en orina entre individuos.* 
+
+- Resolver verificando los supuestos y concluir. Realice comparaciones de ser necesario y cuando corresponda. Estime los componentes de varianza y concluya.  
+
+```{r}
+Datos  <- read.delim("/home/pangolin/Documents/materias/biome2/2020/tps/tp5/nuevo/TP_5_Modelos Mixtos/Anidados - Bloques/Albumina.txt")
+```
+
+```{r}
+Datos$individuo <- factor(Datos$individuo)# el número de individuo como factor
+#Hay dos individuos  identificados con el mismo número(uno de cada grupo)
+#Si no cambiamos esto, el programa entiende que es un mismo individuo que está en ambos grupos!
+Datos$IndivGrupo <- with(Datos, interaction(individuo, Grupo))
+#Ahora tenemos esta nueva variable que asigna un nombre distinto a cada individuo. 
+head(Datos)
+```
+
+```{r}
+library(ggplot2)
+p <- ggplot(Datos, aes(Grupo, albumina, color=IndivGrupo, group=IndivGrupo))
+p + geom_point() +labs(x="Grupo", y="Albumina en orina")
+```
+
+```{r}
+p1 <- ggplot(Datos, aes(individuo, albumina, color=Grupo, group=Grupo))
+p1 + geom_point() +facet_grid(. ~ Grupo)+labs(x="Individuo", y="Albumina en orina")
+```
+
+## hacemos el modelo
+```{r}
+library(lme4)
+m1 <- lmer(albumina ~ Grupo + (1 | IndivGrupo), data = Datos)
+```
+
+## supuestos e
+```{r}
+e<-resid(m1) # residuos de pearson
+pre<-predict(m1) #predichos
+par(mfrow = c(1, 2))
+plot(pre, e, xlab="Predichos", ylab="Residuos de pearson",main="Gráfico de dispersión de RE vs PRED",cex.main=.8 )
+abline(0,0)
+car::qqPlot(e)
+par(mfrow = c(1, 1))
+shapiro.test(e)
+```
+
+## supuestos aleatorio
+```{r}
+#Probamos normalidad del factor aleatorio
+alfai<-ranef(m1)$IndivGrupo$'(Intercept)'
+car::qqPlot(alfai)
+```
+
+```{r}
+#significacion parte fija
+m0<- lmer(albumina ~  (1|IndivGrupo), data=Datos)
+anova(m0,m1)
+AIC(m0,m1)
+# en este caso, la variable fija "Grupo" no es significativa.  
+```
+
+## predicciones
+```{r}
+# Parte fija
+fitted(m1)  #predicciones parte fija + aleatoria
+fixef(m1) #estimacion parametros efectos fijos
+```
+
+*Al no encontrar una efecto de grupo, podemos concluir que no hay evidencia para decir que los niveles de albumina en sangre cambian con el tiempo de evolucion de la diabetes.*  
+
+## vemos icc
+```{r}
+(icc <- 0.0009277/(0.0009277+0.0007232))
+```
+
+*Vemos que tenemos un icc de 0.56 lo cual es indicador que hay variabilidad no explicada correspondiente a los individuos. Esto nos puede indicar que hay factores no incluidos en este estudio que podrian estar relacionados con no haber encontrado un efecto del grupo.*  
+
+```{r}
+# Simple Pie Chart
+slices <- c(0.0009277, 0.0007232)
+lbls <- c("Individuos", "Residual")
+pie(slices, labels = lbls, main="Variance components")
+```
+
+## Problema 8. Con lápiz y papel  
+
+Se desea estudiar la efectividad de un nuevo insecticida frente a la Deltametrina 10%, para el control de un insecto urbano. Se decide aplicar el tratamiento por manzana, para evitar la posible interferencia entre tratamientos. Para ello se seleccionan al azar 15 manzanas con niveles similares de infestacion inicial y se las divide, tambien al azar, en 3 grupos iguales, a uno se le aplica el nuevo insecticida, a otro la deltametrina y el tercero es dejado como control (se pulveriza con liquido inerte). Se registra la abundancia del insecto a los 3 dias luego de la aplicacion del insecticida, en 5 viviendas de cada manzana, colocando 2 trampas para insectos en cada una de ellas.   
+- Plantee el modelo completo e interprete cada término en relación al ensayo.  
+- Indique el rango de valores de cada subíndice.    
+
+
+# Parte C: Diseños de Medidas Repetidas en el tiempo o en el espacio  
+
+## Problema 8. Sueño  
+
+Se ha demostrado que la privacion del suemio puede afectar negativamente una amplia gama de las funciones cognitivas. Uno de los efectos mas prominentes de la perdida del suenio es el deterioro en la vigilancia y la activacion. Se llevo a cabo un experimento a fin de determinar el efecto de la cafeina sobre la perdida de atencion producida por privacion del suenio. Participaron 26 individuos que fueron privados totalmente de sueño durante tres dias. Los individuos fueron divididos al azar en dos grupos. Uno recibio el tratamiento placebo y el otro, cafeina. Al inicio, primero, segundo y tercer dia se les aplico la prueba de de vigilancia psicomotora 10 min (PVT). Esta mide la atencion sostenida o alerta al registrar los tiempos de respuesta promedio a estimulos visuales que se producen en intervalos aleatorios durante 10 min (en seg). Los datos en el archivo *Suenio.txt*.  
+
+```{r}
+Suenio<-read.delim("/home/pangolin/Documents/materias/biome2/2020/tps/tp5/nuevo/Suenio.txt")
+```
+
+- Identifique el tipo de estudio, la unidad experimental, la variable dependiente, tipo y potencial distribución de probabilidades, las variables explicatorias, tipo y si son de efectos fijos o aleatorios. ¿De qué diseño se trata? ¿Con cuántas réplicas cuenta para evaluar el efecto del tratamiento con cafeína?.  
+
+Variable dependiente: tiempo de respuesta (segundos). Continua, distribucion potencial normal.
+
+Variables explicativas:  
+Tratamiento, 2 niveles (efectos fijos)  
+Tiempo, 4 niveles (efectos fijo)  
+
+Individuos, aleatorios.  
+
+Tipo de estudio: Observacional  
+
+UE: Individuo  
+
+**Modelo marginal (como comparacion de medias)**
+
+\[Y_{ijk}=\mu+\alpha_i+\beta_j+\alpha\beta_{ij}+\epsilon_{ijk}\]
+
+i=1:2, j=1:4, k=1:13 (con k anidado en i)
+
+\[\epsilon_{ijk}\sim NID(0,\sum{k})\]
+
+```{r}
+summary(Suenio)
+Suenio$individuo<-factor(Suenio$individuo)
+summary(Suenio)
+str(Suenio)
+```
+
+- Describa los datos mediante un gráfico de perfiles por individuo y promedio.  
+
+```{r}
+# ordeno los niveles (para que placebo vaya a la intercept)
+levels(Suenio$tratamiento) ## ¿cómo los toma?
+Suenio$tratamiento<-factor(Suenio$tratamiento,levels=c("placebo","cafeina"))
+levels(Suenio$tratamiento) ## ¿qué cambió?
+# ordeno los niveles (para que inicial vaya a la intercept)
+levels(Suenio$tiempo) ## 
+Suenio$tiempo<-factor(Suenio$tiempo,levels=c("inicial","dia 1", "dia 2", "dia 3"))
+levels(Suenio$tiempo) ## ¿qué cambió?
+```
+
+```{r,warning=FALSE}
+## Un poco de descriptiva
+library(ggplot2)
+ggplot(data = Suenio, aes(x = tratamiento, y = t_reac, fill = tratamiento)) +
+geom_boxplot() +labs(title = "Box-plot",x = "tratamiento",y = "Tiempo de reaccion")+theme_bw()
+
+#spaguetti plots
+ggplot(data = Suenio, aes(x = tiempo, y = t_reac, colour = factor(individuo), group = individuo)) + geom_point()+geom_line()+facet_grid(. ~ tratamiento)+labs(title ="Spaghetti-plots, v. 1",x = "Tiempo",y = "Tiempo de reaccion")+theme_bw()
+
+## tratamientos en el tiempo
+ggplot(data = Suenio, aes(x = tiempo,y = t_reac,fill=tratamiento))+ geom_smooth(aes(group = tratamiento, colour = tratamiento),se = FALSE)+  labs(title = "Box-plot considerando tratamiento y tiempo",x = "Tiempo",y = "Tiempo de reaccion")+theme_bw()
+```
+
+```{r}
+# estudiamos las correlaciones entre tiempos
+# para convertir a formato wide (cada tiempo en una columna distinta)
+library(reshape2)
+Suenio_wide <- dcast(Suenio,individuo+tratamiento  ~ tiempo, value.var="t_reac")
+Suenio2<-Suenio_wide[,3:6]
+head(Suenio2)
+```
+
+```{r}
+plot(Suenio2)
+```
+
+```{r}
+round(cov(Suenio2[1:4]),2) #matriz de covarianza 
+round(cor(Suenio2[1:4]),2) #matriz de correlacion
+```
+
+```{r}
+## Cómo cae esa correlación entre tiempos?
+Tiempo<-c(1:3)
+r<-c(0.56,	0.30, 0.25) ## ¿De dónde salen estos valores?
+r_t<-as.data.frame(cbind(Tiempo,r))
+plot(r_t)
+```
+
+- Ajuste distintas estructuras para la matriz de covarianza. Elija la que a su juicio considere la más apropiada.  
+
+## Modelado
+
+En primer lugar, crearemos una nueva base de datos utilizando la funcion melt() del paquete 'reshape2' en el dataframe en formato wide para tener al tiempo inicial como una covariable.
+
+```{r}
+## Creacion de la base de datos.
+## Argumentos de la funcion melt().
+# 'id.vars' = las variables que quiero utilizar para definir cada fila de la matriz.
+# 'variable.name' = el nombre del factor que se creara. Este contendra en sus niveles los nombres de las variables que se funden (= melt). En este caso nos devolvera el 'tiempo', porque estamos haciendo el camino inverso al dcast() que hicimos al comienzo.
+
+# value.name = el nombre de la variable que almacena los valores. En este caso sera el tiempo de reaccion.
+```
+
+```{r}
+###Incluir tiempo inicial como co-variable.
+datos_con_inicial <- melt(Suenio_wide,id.vars = c("individuo", "tratamiento", "inicial"),
+                          variable.name = "tiempo",
+                          value.name = "t_reac")
+```
+
+```{r}
+# exploremos las caracteristicas del nuevo data frame
+dim(datos_con_inicial)
+head(datos_con_inicial)
+tail(datos_con_inicial)
+str(datos_con_inicial)
+```
+
+```{r}
+# como sacamos el t_inicial del factor tiempo, revisemos como quedaron las correlaciones 
+datos_wide <- dcast(datos_con_inicial,
+                    formula = individuo + tratamiento ~ tiempo,
+                    value.var = "t_reac")
+datos_correlaciones <- datos_wide[,3:5]
+coef_corr <- round(cor(datos_correlaciones), 2)
+```
+
+```{r}
+library(corrplot)
+corrplot(coef_corr, 
+         type = "upper",
+         method = "number")
+```
+
+**Generemos modelos con distintas estructuras de correlacion y chequeemos los supuestos.**
+
+```{r}
+library('nlme')
+# Simetria compuesta. Varianzas iguales (recordar que la funcion lme() se puede utilizar aqui tambien).
+modelo_corCompSymm <- gls(t_reac ~ tratamiento * tiempo + inicial,
+	correlation = corCompSymm(form = ~ 1 | individuo),
+                 data = datos_con_inicial)
+getVarCov(modelo_corCompSymm)
+```
+
+```{r}
+# Autocorrelacion de orden 1. Varianzas iguales.
+modelo_AR1 <- gls(t_reac ~ tratamiento * tiempo + inicial,
+                 correlation = corAR1(form = ~ 1 | individuo),
+                 data = datos_con_inicial)
+
+getVarCov(modelo_AR1)
+
+#modelo_AR1 <- lme(t_reac ~ tratamiento * tiempo + inicial, (random = ~ 1 | individuo), correlation = corAR1(form = ~ 1 | individuo),data = datos_con_inicial)
+#library(mgcv)
+#extract.lme.cov2(modelo_AR1,datos_con_inicial,start.level=1)
+```
+
+```{r}
+# Modelo 3: Matriz de correlacion general.
+modelo_corSymm <- gls(t_reac ~ tratamiento * tiempo + inicial,
+                correlation = corSymm(form = ~ 1 | individuo),
+                data = datos_con_inicial)
+getVarCov(modelo_corSymm)
+```
+
+```{r}
+supuestos <- function (modelo) {
+  residuos <- resid(modelo, type = "pearson")
+  predichos <- predict(modelo)
+  par(mfrow = c(1, 2))
+  plot(x = predichos,
+       y = residuos,
+       ylim = c(-4, 4),
+       xlab = "Predichos",
+       ylab = "Residuos de Pearson",
+       main = "Gráfico de dispersión de residuos v. predichos", 
+       cex.main = 0.6 )
+  abline(h = c(-2, 2, 0),
+         col = c("red", "red", "black"),
+         lty = c(2, 2, 1))
+  car::qqPlot(residuos)
+  shapiro.test(residuos)
+}
+```
+
+```{r}
+supuestos(modelo_corCompSymm)
+supuestos(modelo_AR1)
+supuestos(modelo_corSymm)
+```
+
+## Analisis de modelos
+
+```{r}
+# solo para fines didacticos, veamos el summary de los 3 modelos para comparar las estructuras de correlacion obtenidas
+summary(modelo_corCompSymm)
+summary(modelo_AR1)
+summary(modelo_corSymm)
+```
+
+```{r}
+### En base al analisis de los supuestos decida los modelos candidatos
+AIC(modelo_corCompSymm,modelo_AR1,modelo_corSymm)
+```
+```{r}
+anova(modelo_AR1)
+summary(modelo_AR1)
+```
+
+-  Concluya acerca del efecto de la cafeína sobre la pérdida de atención producida por la privación del sueño. ¿Cambia con el tiempo? 
+
+```{r}
+library(emmeans)
+(Tukey_tiempo <- emmeans(modelo_AR1,pairwise ~ tiempo))
+```
+
+```{r}
+plot(Tukey_tiempo,comparisons=TRUE)
+```
+
+## Predicciones  
+
+```{r}
+library("margins")
+model_p<-prediction(modelo_AR1, at = list(inicial=rep(mean(datos_con_inicial$inicial),78)))
+
+View(model_p)
+ggplot(data = model_p, aes(x = tiempo,
+                                     y = fitted,
+                                     colour = tratamiento,
+                                     group = tratamiento)) +
+  labs(title = "Modelo marginal predicho con t_inicial fijo (valor medio: 6.58seg)",
+       x = "",
+       y = "Tiempo de reaccion (seg)") +
+  geom_point() +
+  geom_line() +
+  theme_bw()
+```
+
+*Vemos que la cafeina tiene un efecto sobre el tiempo de reaccion y que ese efecto no depende del tiempo (interaccion tiempo-cafeina NS). Sin embargo, la diferencia entre los grupos parece disminuir conforme pasa el tiempo lo cual nos indicaria que el efecto de la cafeina se pierde a medida que pasa el tiempo. Esto es logico, quizas habria que tomar mas tiempos para poner a prueba esto. Tambien se podria comparar los grupos en algun tiempo en particular (utilziando el intervalo de confianza de la diferencia de medias).*  
+
+## Problema 10. Con lápiz y papel  
+
+Los líquenes son asociaciones mutualistas entre hongos y algas que pueden
+funcionar en la naturaleza como una unidad. Debido a que los organismos epífitos
+reciben la mayor parte de sus nutrientes a partir de la atmósfera, son más susceptibles a los factores atmosféricos y, por lo tanto, constituyen sustratos ideales para ser utilizados como bioindicadores. Con el objetivo de evaluar la respuesta de los líquenes ala contaminación atmosférica generada por una ruta que atraviesa un Parque Nacional, se trazaron 15 transectas desde la ruta hacia el interior del parque, 5 en áreas de bosque primario, 5 en bosque secundario y 5 en áreas de palmital. En tres puntos de cada transecta (elegidos según una hipótesis previa de gradiente decreciente de contaminación a 0, 50, y 150 metros) se eligieron 4 árboles de similares características y se contó el número de líquenes en la corteza de cada uno. ¿Existe alguna medida repetida en este estudio? Justifique.  
+
+- Identifique el tipo de estudio, la unidad experimental, la variable dependiente, los factores y sus niveles. ¿De qué diseño se trata? ¿Con cuántas réplicas?.  
+- Escriba el modelo, en general y en términos del problema.  
+
+## Problema 11. Perros  
+
+La morfina es un potente analgesico que actua a traves de la interaccion con receptores opioides en el sistema nervioso central (SNC). El trimetafan es un agente bloqueante ganglionar que se utiliza como complemento de algunas anestesias para inducir hipotension controlada. Existen evidencias que sugieren que ambas drogas podrian inducir la liberacion de histamina como respuesta alergica. Con el objetivo de estudiarlo, se selecciono un grupo de 16 perros mestizos que fueron separados al azar en dos grupos de 8 perros cada uno. Un grupo recibio sulfato de morfina endovenosa y el otro trimetafan endovenoso. Se registro el nivel de histamina en sangre, en $\mu$g/ml, al inicio de la prueba, al minuto y a los 3 minutos. Los resultados en el archivo *Perros.txt*.  
+
+- Identifique el tipo de estudio, la unidad experimental, la variable dependiente, tipo y potencial distribucion de probabilidades, las variables explicatorias, tipo y si son de efectos fijos o aleatorios. ¿De que disenio se trata? ¿Con cuantas replicas cuenta para evaluar el efecto de la droga? ¿Agregaria un tratamiento control a este ensayo? ¿En que consistiria dicho tratamiento?.  
+
+- Escriba el modelo, en general y en terminos del problema.  
+
+- Describa los datos mediante un grafico de perfiles.  
+
+```{r}
+perros_data  <- read.table("/home/pangolin/Documents/materias/biome2/2020/tps/tp5/nuevo/TP_5_Modelos Mixtos/Medidas Repetidas/Perros.txt", header = TRUE)
+perros_df <- perros_data[,c(2,1,3,4)]
+perros_df$Tiempo <- as.factor(perros_df$Tiempo)
+```
+
+```{r}
+library(ggplot2)
+p <- ggplot(perros_df, aes(GRUPO, Histamina))
+p + geom_boxplot() + labs(x="Tratamiento", y="Histamina en sangre [ug/ml]")
+```
+
+```{r}
+#spaguetti plots
+p <- ggplot(data = perros_df, aes(x = Tiempo, y = Histamina, group = Individuo))
+p + geom_line(aes(colour=Individuo)) + facet_grid (. ~ GRUPO)+ labs(y="Histamina en sangre [ug/ml]")
+```
+
+```{r}
+## Trataientos en el Tiempo
+p <- ggplot(data = perros_df, aes(x = Tiempo, y = Histamina, colour=GRUPO, group=GRUPO))
+p + geom_smooth(se = FALSE)+ labs(y="Histamina en sangre [ug/ml]")
+```
+
+- Ajuste distintas estructuras para la matriz de covarianza. Elija la que a su juicio considere la mas apropiada.  
+
+```{r}
+# estudiamos las correlaciones entre Tiempos
+# para convertir a formato wide (cada Tiempo en una columna distinta)
+library(reshape2)
+perros_df_wide <- dcast(perros_df,Individuo  + GRUPO  ~ Tiempo, value.var="Histamina")
+perros_df2<-perros_df_wide[,3:5]
+summary(perros_df2)
+plot(perros_df2)
+```
+
+```{r}
+round(cov(perros_df2[1:3]),2) #matriz de covarianza 
+round(cor(perros_df2[1:3]),2) #matriz de correlacion
+```
+
+## modelamos
+
+```{r}
+## Ahora modelemos MR, con distintas estructuras de correlación
+library(nlme)
+#Los modelos 1 y 2 requieren tiempos equiespaciados que no se verifica en el caso de estudio
+#Modelo 1: Simetría compuesta. cada individuo con id unico
+m1<-gls(Histamina ~GRUPO*Tiempo,  correlation = corCompSymm(form = ~ 1 | Individuo), perros_df)
+m1b<-gls(Histamina ~GRUPO*Tiempo,  correlation = corCompSymm(form = ~ 1 | Individuo), weights=varIdent(form= ~ 1|Tiempo), perros_df)
+## y MODELANDO VARIANZAS POR TRATAMIENTO?
+m1c<-gls(Histamina ~GRUPO*Tiempo,  correlation = corCompSymm(form = ~ 1 | Individuo), weights=varIdent(form= ~ 1|GRUPO), perros_df)
+```
+
+```{r}
+#Modelo 2: AR1
+m2<-gls(Histamina ~GRUPO*Tiempo,  correlation = corAR1(form = ~ 1 | Individuo), perros_df)
+#Modelo 2b: AR1, varianzas distintas entre tratamientos
+m2b<-gls(Histamina ~GRUPO*Tiempo,  correlation = corAR1(form = ~ 1 | Individuo), perros_df, weights=varIdent(form= ~ 1|GRUPO ))
+# Modelo 2c: Ar1, varianzas distintas entre Tiempos 
+m2c<-gls(Histamina ~GRUPO*Tiempo,  correlation = corAR1(form = ~ 1 | Individuo), perros_df, weights=varIdent(form= ~ 1|Tiempo ))
+```
+
+```{r}
+#Los siguientes modelos no tienen el supuesto de tiempos equiespaciados -> OK
+#Modelo 3: matriz desestructurada
+m3<-gls(Histamina ~GRUPO*Tiempo,  correlation = corSymm(form = ~ 1 | Individuo), perros_df)
+#Modelo 4: autoregresiva continua de orden 1
+m4<-gls(Histamina ~GRUPO*Tiempo,  correlation = corCAR1(form = ~ 1 | Individuo), perros_df)
+m4b<-gls(Histamina ~GRUPO*Tiempo,  correlation = corCAR1(form = ~ 1 | Individuo), weights=varIdent(form= ~ 1|Tiempo), perros_df)
+```
+
+```{r}
+AIC(m1,m1b, m1c, m2,m2b, m2c, m3, m4,m4b)
+```
+
+```{r}
+#Supuestos
+e1b<-residuals(m1b, "pearson") # residuos de Pearson
+pre1b<-predict(m1b) #predichos
+par(mfrow = c(1, 2))
+plot(pre1b, e1b, xlab="Predichos", ylab="Residuos de pearson m4b",main="Gráfico de dispersión de RE vs PRED m4b",cex.main=.8 )
+abline(0,0)
+car::qqPlot(e1b)
+par(mfrow = c(1, 1))
+shapiro.test(e1b)
+```
+
+```{r}
+anova(m4b)
+summary(m4b)
+```
+
+*Elegimos ese porque tiene misma cantidad de parametros estimados que el de menor AIC y no exige supuesto de equiespaciados de tiempo.*  
+
+- Concluya acerca del efecto de la morfina y el trimetafan en el nivel de histamina en sangre de perros.
+
+```{r}
+library(emmeans)
+(Tukey_tiempo <- emmeans(m4b,pairwise ~ GRUPO * Tiempo))
+plot(Tukey_tiempo,comparisons=TRUE)  
+```
+
+*Se observa que el trimetafan aumenta la liberacon de histamina por encontrarse un aumento entre el minuto 2 y el minuto 1 de trimetafan que se mantiene durante el tercer minuto. Para el caso de la morfina se ve una dinamica mas rapida, incrementandose mucho la liberacion de histamina entre el minuto 1 y 2, pero disminuyendo rapidamente tambien a valores basales en el minuto 3. Sin embargo, el valor maximo de liberacion de histamina alcanzado por la morfina es mayor que el nivel alcanzado por el trimetafan.*  
+
+**Se deberian inluir los valores de los IC de la comparacion de medias.**  
+
+## Problema 12. A sacarnos la duda del millón....  
+
+Para complementar el “trabajo de hormiga” que venimos haciendo desde TPs anteriores (base de datos *Hormigas.txt*), les proponemos que respondan las preguntas que nos fuimos haciendo, pero ahora teniendo en cuenta el día en que se realizo la experiencia (algo que varios se cuestionaron si no debía considerarse desde un principio). Entonces, estudiemos:  
+
+- ¿Como se modifica la masa de tóxico ingerida por las hormigas en función del cebo consumido, comparando dos cebos alternativos (SAC 30 y SAC 68) con un cebo comercial (CC)?.  
+- ¿Difiere el tiempo de ingesta de las hormigas entre los tratamientos?.  
+- ¿Difiere el numero de pausas entre los tratamientos aplicados?.  
+- ¿Cual es la diferencia entre el factor día de este problema y el factor tiempo de los problemas anteriores?.  
+
+
+

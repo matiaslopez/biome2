@@ -1,0 +1,65 @@
+Tratamiento	Equino	Tiempo	Glucemia
+A campo	AL	0	85.13
+A campo	BA	0	72.29
+A campo	MA	0	72.29
+A campo	PR	0	60.8
+A campo	VA	0	77.36
+A campo	PRI	0	91.85
+A campo	TOB	0	100
+A campo	FLA	0	85.84
+A campo	GOR	0	118.45
+Estabulados	AND	0	88.84
+Estabulados	POM	0	84.84
+Estabulados	CA	0	85.91
+Estabulados	DQ	0	88.73
+Estabulados	FU	0	78.17
+Estabulados	NO	0	75.7
+Estabulados	OX	0	112.32
+A campo	AL	30	120.26
+A campo	BA	30	85.13
+A campo	MA	30	79.72
+A campo	PR	30	87.83
+A campo	VA	30	85.13
+A campo	PRI	30	121.89
+A campo	TOB	30	154.1
+A campo	FLA	30	104.72
+A campo	GOR	30	125.32
+Estabulados	AND	30	108.15
+Estabulados	POM	30	109.43
+Estabulados	CA	30	118.66
+Estabulados	DQ	30	118.66
+Estabulados	FU	30	100
+Estabulados	NO	30	88.73
+Estabulados	OX	30	144.01
+A campo	AL	60	162.48
+A campo	BA	60	113.84
+A campo	MA	60	104.72
+A campo	PR	60	113.84
+A campo	VA	60	98.64
+A campo	PRI	60	128.76
+A campo	TOB	60	167.62
+A campo	FLA	60	109.87
+A campo	GOR	60	152.79
+Estabulados	AND	60	111.59
+Estabulados	POM	60	127.05
+Estabulados	CA	60	156.33
+Estabulados	DQ	60	133.09
+Estabulados	FU	60	105.98
+Estabulados	NO	60	97.18
+Estabulados	OX	60	169.36
+A campo	AL	90	197.61
+A campo	BA	90	113.84
+A campo	MA	90	117.22
+A campo	PR	90	130.73
+A campo	VA	90	127.35
+A campo	PRI	90	144.64
+A campo	TOB	90	214.34
+A campo	FLA	90	118.45
+A campo	GOR	90	165.67
+Estabulados	AND	90	111.59
+Estabulados	POM	90	134.43
+Estabulados	CA	90	174.29
+Estabulados	DQ	90	140.84
+Estabulados	FU	90	115.49
+Estabulados	NO	90	109.15
+Estabulados	OX	90	211.96
