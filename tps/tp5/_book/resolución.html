@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>3 Resolución | TP5 - Problema 8</title>
+  <meta name="description" content="3 Resolución | TP5 - Problema 8" />
+  <meta name="generator" content="bookdown 0.21 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="3 Resolución | TP5 - Problema 8" />
+  <meta property="og:type" content="book" />
+  
+  
+  
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="3 Resolución | TP5 - Problema 8" />
+  
+  
+  
+
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="preparación.html"/>
+
+<script src="libs/header-attrs-2.5/header-attrs.js"></script>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="1" data-path="enunciado.html"><a href="enunciado.html"><i class="fa fa-check"></i><b>1</b> Enunciado</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="enunciado.html"><a href="enunciado.html#hormona-de-crecimiento"><i class="fa fa-check"></i><b>1.1</b> Hormona de crecimiento</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="preparación.html"><a href="preparación.html"><i class="fa fa-check"></i><b>2</b> Preparación</a></li>
+<li class="chapter" data-level="3" data-path="resolución.html"><a href="resolución.html"><i class="fa fa-check"></i><b>3</b> Resolución</a></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">TP5 - Problema 8</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="resolución" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Resolución</h1>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="resolución.html#cb3-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;Hormona.txt&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>)</span>
+<span id="cb3-2"><a href="resolución.html#cb3-2" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>Camada <span class="ot">&lt;-</span> <span class="fu">factor</span>(data<span class="sc">$</span>Camada)</span>
+<span id="cb3-3"><a href="resolución.html#cb3-3" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>Hormona <span class="ot">&lt;-</span> <span class="fu">factor</span>(data<span class="sc">$</span>Hormona,<span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;Testigo&quot;</span>, <span class="st">&quot;Baja&quot;</span>, <span class="st">&quot;Alta&quot;</span>))</span>
+<span id="cb3-4"><a href="resolución.html#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span></code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    18 obs. of  3 variables:
+##  $ Camada : Factor w/ 6 levels &quot;1&quot;,&quot;2&quot;,&quot;3&quot;,&quot;4&quot;,..: 1 1 1 2 2 2 3 3 3 4 ...
+##  $ Hormona: Factor w/ 3 levels &quot;Testigo&quot;,&quot;Baja&quot;,..: 1 2 3 1 2 3 1 2 3 1 ...
+##  $ GanPeso: num  4.6 6.45 6.5 2.75 4.08 4.31 1.8 2.72 2.79 2.7 ...</code></pre>
+<ol style="list-style-type: decimal">
+<li><p>Identifique la variable respuesta, los factores y sus niveles y su condición de fijos o
+aleatorios, cruzados o anidados, justificando su respuesta.</p>
+<ul>
+<li>VR: GanPeso con valores entre 1.8 y 6.5 medida en gr</li>
+<li>Factores:
+<ul>
+<li>Hormona:
+<ul>
+<li>niveles: Testigo, Baja, Alta</li>
+<li>variable de efecto fijo</li>
+</ul></li>
+<li>Camada
+<ul>
+<li>niveles: 1, 2, 3, 4, 5, 6</li>
+<li>variable de efecto aleatorio</li>
+</ul></li>
+</ul>
+Los factores están cruzados ya que para cada Camada se usan todos los valores de Hormona y para cada Hormona existen todos los valores de Camada.</li>
+</ul></li>
+<li><p>Indique el modelo estadístico utilizado, en términos teóricos y aplicado a este
+experimento.</p>
+<ul>
+<li>Variable respuesta: <code>GanPeso</code></li>
+<li>Variables explicativas: <code>Hormona</code> y <code>Camada</code></li>
+</ul>
+<p>Buscamos un modelo que explique la Ganancia del peso en función de la cantidad de Hormona suminstrada y tenemos en cuenta que puede haber variaciones en las camadas.</p>
+<p>Por lo que usaremos el modelo:
+<span class="math display">\[ 
+     GanPeso_{i,j} = \beta_0 + \beta_1 Hormona_{Baja}  + \beta_2 Hormona_{Alta} + B_j + \varepsilon_{i,j}
+ \]</span><br />
+Con <span class="math inline">\(i\)</span> = 1 a 3 y <span class="math inline">\(j\)</span> = 1 a 6.</p>
+<p><span class="math display">\[
+   \varepsilon \approx NID(0, \sigma^2)
+ \]</span></p>
+<p><span class="math display">\[
+   B_j \approx NID(0, \sigma^2_{camada})
+ \]</span></p></li>
+<li><p>Describa gráfica y estadísticamente los resultados. Realice un gráfico de perfiles para estudiar el paralelismo entre bloques. ¿Qué significa “paralelismo” en el contexto de este ensayo? ¿Qué piensa que ocurriría si los bloques respondieran de forma “No-paralela”?</p></li>
+</ol>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="resolución.html#cb5-1" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">lm</span>(GanPeso <span class="sc">~</span> Hormona <span class="sc">+</span> Camada, <span class="at">data =</span> data)</span>
+<span id="cb5-2"><a href="resolución.html#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m)</span></code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = GanPeso ~ Hormona + Camada, data = data)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -0.75056 -0.17889  0.01278  0.17361  0.51278 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   4.7006     0.2609  18.016 5.94e-09 ***
+## HormonaBaja   1.7000     0.2260   7.524 2.01e-05 ***
+## HormonaAlta   1.7483     0.2260   7.738 1.58e-05 ***
+## Camada2      -2.1367     0.3195  -6.687 5.46e-05 ***
+## Camada3      -3.4133     0.3195 -10.682 8.66e-07 ***
+## Camada4      -1.2500     0.3195  -3.912 0.002905 ** 
+## Camada5      -1.9167     0.3195  -5.998 0.000132 ***
+## Camada6      -0.3267     0.3195  -1.022 0.330742    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.3914 on 10 degrees of freedom
+## Multiple R-squared:  0.9588, Adjusted R-squared:   0.93 
+## F-statistic: 33.28 on 7 and 10 DF,  p-value: 3.808e-06</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="resolución.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(m)</span></code></pre></div>
+<pre><code>## Analysis of Variance Table
+## 
+## Response: GanPeso
+##           Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+## Hormona    2 11.8980  5.9490  38.840 1.930e-05 ***
+## Camada     5 23.7861  4.7572  31.059 8.796e-06 ***
+## Residuals 10  1.5317  0.1532                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="resolución.html#cb9-1" aria-hidden="true" tabindex="-1"></a>(medias.Datos<span class="ot">&lt;-</span><span class="fu">aggregate</span>(GanPeso<span class="sc">~</span>Hormona<span class="sc">+</span>Camada, data,mean))</span></code></pre></div>
+<pre><code>##    Hormona Camada GanPeso
+## 1  Testigo      1    4.60
+## 2     Baja      1    6.45
+## 3     Alta      1    6.50
+## 4  Testigo      2    2.75
+## 5     Baja      2    4.08
+## 6     Alta      2    4.31
+## 7  Testigo      3    1.80
+## 8     Baja      3    2.72
+## 9     Alta      3    2.79
+## 10 Testigo      4    2.70
+## 11    Baja      4    5.50
+## 12    Alta      4    5.60
+## 13 Testigo      5    3.10
+## 14    Baja      5    4.40
+## 15    Alta      5    4.30
+## 16 Testigo      6    4.21
+## 17    Baja      6    6.21
+## 18    Alta      6    6.15</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="resolución.html#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Opcion grafica 1</span></span>
+<span id="cb11-2"><a href="resolución.html#cb11-2" aria-hidden="true" tabindex="-1"></a>gp <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(medias.Datos, <span class="fu">aes</span>(<span class="at">x=</span>Hormona, <span class="at">y=</span>GanPeso, <span class="at">colour=</span>Camada, <span class="at">group=</span>Camada))</span>
+<span id="cb11-3"><a href="resolución.html#cb11-3" aria-hidden="true" tabindex="-1"></a>gp <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">linetype=</span>Camada), <span class="at">size=</span>.<span class="dv">6</span>) <span class="sc">+</span><span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape=</span>Camada), <span class="at">size=</span><span class="dv">3</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="resolución.html#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Opcion grafica 2</span></span>
+<span id="cb12-2"><a href="resolución.html#cb12-2" aria-hidden="true" tabindex="-1"></a>gp1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(medias.Datos, <span class="fu">aes</span>(<span class="at">x=</span>Camada, <span class="at">y=</span>GanPeso, <span class="at">colour=</span>Hormona, <span class="at">group=</span>Hormona))</span>
+<span id="cb12-3"><a href="resolución.html#cb12-3" aria-hidden="true" tabindex="-1"></a>gp1 <span class="sc">+</span> <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">linetype=</span>Hormona), <span class="at">size=</span>.<span class="dv">6</span>) <span class="sc">+</span><span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">shape=</span>Hormona), <span class="at">size=</span><span class="dv">3</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+<p>El paralelismo (que no existe) estaría apuntando a que no hay interacción entre los 2 factores. Igualmente en este caso, nos gustaría que el modelo pueda ser generalizado a cualquier camada, con lo cual pasaremos de tener la camada como factor a tenerla como efecto aleatorio.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="resolución.html#cb13-1" aria-hidden="true" tabindex="-1"></a>m2 <span class="ot">&lt;-</span><span class="fu">lmer</span>(GanPeso <span class="sc">~</span> Hormona <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Camada), <span class="at">data =</span> data)</span>
+<span id="cb13-2"><a href="resolución.html#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m2)</span></code></pre></div>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [&#39;lmerModLmerTest&#39;]
+## Formula: GanPeso ~ Hormona + (1 | Camada)
+##    Data: data
+## 
+## REML criterion at convergence: 37
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -1.89663 -0.47165  0.05532  0.43962  1.15342 
+## 
+## Random effects:
+##  Groups   Name        Variance Std.Dev.
+##  Camada   (Intercept) 1.5347   1.2388  
+##  Residual             0.1532   0.3914  
+## Number of obs: 18, groups:  Camada, 6
+## 
+## Fixed effects:
+##             Estimate Std. Error      df t value Pr(&gt;|t|)    
+## (Intercept)   3.1933     0.5304  5.6529   6.021  0.00118 ** 
+## HormonaBaja   1.7000     0.2260 10.0000   7.524 2.01e-05 ***
+## HormonaAlta   1.7483     0.2260 10.0000   7.738 1.58e-05 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) HrmnBj
+## HormonaBaja -0.213       
+## HormonaAlta -0.213  0.500</code></pre>
+<ol style="list-style-type: decimal">
+<li><p>Verifique los supuestos del modelo.</p>
+<p>Vamos a verificar los supuestos:</p>
+<ul>
+<li>Residuos</li>
+</ul></li>
+</ol>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="resolución.html#cb15-1" aria-hidden="true" tabindex="-1"></a>e<span class="ot">&lt;-</span><span class="fu">resid</span>(m2) <span class="co"># residuos</span></span>
+<span id="cb15-2"><a href="resolución.html#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># re&lt;-rstandard(m2) #residuos estandarizados</span></span>
+<span id="cb15-3"><a href="resolución.html#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># pre&lt;-predict(m2) #predichos</span></span>
+<span id="cb15-4"><a href="resolución.html#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># res&lt;-cbind(data$Camada, Datos$Hormona, data$GanPeso,pre,e,round(re,3)) </span></span>
+<span id="cb15-5"><a href="resolución.html#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># colnames(res)&lt;-c(&quot;provincia&quot;, &quot;densidad&quot;, &quot;aceite&quot;, &quot;Predichos&quot;, &quot;Residuos&quot;, &quot;residuos std&quot;) # agregamos los &quot;Column Names&quot;</span></span>
+<span id="cb15-6"><a href="resolución.html#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># res</span></span>
+<span id="cb15-7"><a href="resolución.html#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># #Supuestos</span></span>
+<span id="cb15-8"><a href="resolución.html#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># # Graficos diagnosticos</span></span>
+<span id="cb15-9"><a href="resolución.html#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="co"># par(mfrow = c(1, 2))</span></span>
+<span id="cb15-10"><a href="resolución.html#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># # Residuos est vs valores predichos</span></span>
+<span id="cb15-11"><a href="resolución.html#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plot(pre, re, xlab=&quot;Predichos&quot;, ylab=&quot;Residuos estandarizados&quot;,main=&quot;Gr?fico de dispersi?n de RE vs PRED&quot; )</span></span>
+<span id="cb15-12"><a href="resolución.html#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># abline(0,0)</span></span>
+<span id="cb15-13"><a href="resolución.html#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="resolución.html#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="co"># qqplot</span></span>
+<span id="cb15-15"><a href="resolución.html#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="fu">qqPlot</span>(e, <span class="at">main =</span> <span class="st">&quot;QQ Plot residuos&quot;</span>)</span></code></pre></div>
+<p><img src="_main_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre><code>## [1] 10  7</code></pre>
+<pre><code> Prueba de Shapiro y Levene
+   </code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="resolución.html#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># prueba de shapiro</span></span>
+<span id="cb18-2"><a href="resolución.html#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(e)</span></code></pre></div>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  e
+## W = 0.9631, p-value = 0.6623</code></pre>
+<pre><code> No tenemos evidencia para decir que los residuos no tienen provienen de una distribución normal. Es decir, tenemos homocedasticidad.</code></pre>
+<ol style="list-style-type: decimal">
+<li>Plantee las hipótesis. Resuelva y concluya, asumiendo un nivel de significación del 5%.</li>
+<li>Efectue las comparaciones pertinentes y concluya. Represente gráficamente los
+resultados.</li>
+<li>Resuelva el ejercicio incluyendo “Camadas” como factor fijo. Compare y concluya.
+¿Considera que fue efectivo bloquear? Justifique.</li>
+</ol>
+
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="preparación.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    var src = "true";
+    if (src === "" || src === "true") src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML";
+    if (location.protocol !== "file:")
+      if (/^https?:/.test(src))
+        src = src.replace(/^https?:/, '');
+    script.src = src;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+</body>
+
+</html>

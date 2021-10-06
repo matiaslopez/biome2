@@ -1,0 +1,144 @@
+Ambiente,Pb
+Esp verdes,2.48490665
+Esp verdes,2.944438979
+Esp verdes,2.772588722
+Esp verdes,2.397895273
+Esp verdes,2.890371758
+Esp verdes,2.397895273
+Esp verdes,2.079441542
+Esp verdes,2.890371758
+Esp verdes,2.944438979
+Esp verdes,2.63905733
+Esp verdes,2.63905733
+Esp verdes,1.945910149
+Esp verdes,3.17805383
+Esp verdes,3.713572067
+Esp verdes,2.397895273
+Esp verdes,2.890371758
+Esp verdes,3.663561646
+Esp verdes,2.397895273
+Esp verdes,3.091042453
+Esp verdes,2.302585093
+Esp verdes,1.386294361
+Esp verdes,1.945910149
+Esp verdes,2.944438979
+Esp verdes,1.386294361
+Esp verdes,1.945910149
+Esp verdes,2.302585093
+Esp verdes,1.386294361
+Esp verdes,2.944438979
+Esp verdes,3.218875825
+Esp verdes,2.944438979
+Esp verdes,3.218875825
+Esp verdes,3.526360525
+Esp verdes,2.708050201
+Esp verdes,2.302585093
+Esp verdes,2.944438979
+Esp verdes,3.218875825
+Esp verdes,3.218875825
+B carenciados,3.871201011
+B carenciados,2.63905733
+B carenciados,4.060443011
+B carenciados,2.944438979
+B carenciados,5.497168225
+B carenciados,4.852030264
+B carenciados,2.302585093
+B carenciados,5.192956851
+B carenciados,4.060443011
+B carenciados,2.708050201
+B carenciados,2.302585093
+B carenciados,2.944438979
+B carenciados,2.944438979
+B carenciados,4.060443011
+B carenciados,2.944438979
+B carenciados,3.401197382
+B carenciados,4.060443011
+B carenciados,3.401197382
+B carenciados,3.218875825
+B carenciados,4.276666119
+B carenciados,3.218875825
+B carenciados,5.811140993
+B carenciados,3.258096538
+B carenciados,3.871201011
+B carenciados,2.772588722
+B carenciados,2.944438979
+B carenciados,2.944438979
+B carenciados,3.737669618
+B carenciados,3.912023005
+B carenciados,4.060443011
+B carenciados,5.187385806
+B carenciados,3.433987204
+B carenciados,2.944438979
+B carenciados,2.944438979
+B carenciados,3.401197382
+B carenciados,2.944438979
+B carenciados,2.944438979
+B carenciados,2.302585093
+B carenciados,2.944438979
+B carenciados,1.791759469
+Residencial,2.63905733
+Residencial,3.526360525
+Residencial,2.708050201
+Residencial,3.218875825
+Residencial,3.713572067
+Residencial,4.189654742
+Residencial,2.944438979
+Residencial,3.713572067
+Residencial,1.386294361
+Residencial,5.017279837
+Riachuelo,4.700480366
+Riachuelo,4.317488114
+Riachuelo,3.526360525
+Riachuelo,5.192956851
+Riachuelo,3.258096538
+Riachuelo,4.317488114
+Riachuelo,4.852030264
+Riachuelo,1.791759469
+Riachuelo,5.411646052
+Riachuelo,4.521788577
+Riachuelo,3.63758616
+Riachuelo,5.880532986
+Riachuelo,1.386294361
+Riachuelo,4.521788577
+Riachuelo,2.63905733
+Riachuelo,4.605170186
+Riachuelo,2.397895273
+Riachuelo,2.890371758
+Riachuelo,2.397895273
+Riachuelo,4.204692619
+Riachuelo,5.241747015
+Riachuelo,2.995732274
+Riachuelo,2.63905733
+Riachuelo,3.80666249
+Riachuelo,4.219507705
+Riachuelo,3.63758616
+Riachuelo,4.127134385
+Riachuelo,2.63905733
+Riachuelo,7.199678346
+Riachuelo,4.762173935
+Riachuelo,6.182084907
+Riachuelo,5.342334252
+Riachuelo,6.115892125
+Riachuelo,5.590986981
+Riachuelo,5.476463552
+Riachuelo,5.739792912
+Riachuelo,4.700480366
+Riachuelo,6.778784898
+Riachuelo,4.663439094
+Riachuelo,8.273081334
+Riachuelo,4.605170186
+Riachuelo,4.997212274
+Riachuelo,6.263398263
+Riachuelo,4.290459441
+Riachuelo,4.700480366
+Riachuelo,6.335054251
+Riachuelo,4.510859507
+Riachuelo,4.890349128
+Riachuelo,5.888877958
+Riachuelo,7.961370202
+Riachuelo,5.209486153
+Riachuelo,4.663439094
+Riachuelo,5.293304825
+Riachuelo,5.231108617
+Riachuelo,3.737669618
+Riachuelo,4.060443011

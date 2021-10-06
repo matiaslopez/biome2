@@ -1,0 +1,165 @@
+---
+title: "TP5 - Problema 8"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+# Enunciado
+## Hormona de crecimiento
+
+Se efectúa un experimento para estudiar el efecto de la hormona de crecimiento en ratas jóvenes. Se prueba, en forma inyectable, una dosis baja, una dosis alta y un tercer tratamiento, que sería el testigo, consistente en la inyección de solución fisiológica. Se toman 6 camadas de ratas al azar, y también al azar se
+seleccionan tres animales de cada una. Se asignan los tratamientos al azar dentro de
+cada camada y al cabo de 15 días se mide el aumento de peso, en decigramos. Base de
+datos en **Hormona.txt**.
+
+1. Identifique la variable respuesta, los factores y sus niveles y su condición de fijos o
+aleatorios, cruzados o anidados, justificando su respuesta.
+1. Indique el modelo estadístico utilizado, en términos teóricos y aplicado a este
+experimento.
+1. Describa gráfica y estadísticamente los resultados. Realice un gráfico de perfiles
+para estudiar el paralelismo entre bloques. ¿Qué significa "paralelismo" en el
+contexto de este ensayo? ¿Qué piensa que ocurriría si los bloques respondieran de
+forma "No-paralela"?
+1. Verifique los supuestos del modelo.
+1. Plantee las hipótesis. Resuelva y concluya, asumiendo un nivel de significación del 5%.
+1. Efectue las comparaciones pertinentes y concluya. Represente gráficamente los
+resultados.
+1. Resuelva el ejercicio incluyendo "Camadas" como factor fijo. Compare y concluya.
+¿Considera que fue efectivo bloquear? Justifique.
+
+# Preparación
+
+Cargamos los paquetes y datos
+```{r echo=FALSE, include=FALSE}
+if(dir.exists(file.path("/home", "mlopez"))){
+  setwd("/home/mlopez/git/biome2/tps/tp5/")
+}
+```
+```{r echo=TRUE, include=TRUE, warning=FALSE, message=FALSE}
+list.of.packages <- c("ggplot2", "dplyr", "lme4", "lmerTest", "car", "GGally", "emmeans")
+
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+
+if(length(new.packages)) install.packages(new.packages, dependencies = TRUE)
+lapply(list.of.packages, require, character.only = TRUE)
+```
+
+# Resolución
+```{r}
+data <- read.csv("Hormona.txt", sep = "\t")
+data$Camada <- factor(data$Camada)
+data$Hormona <- factor(data$Hormona,levels = c("Testigo", "Baja", "Alta"))
+str(data)
+```
+
+1. Identifique la variable respuesta, los factores y sus niveles y su condición de fijos o
+aleatorios, cruzados o anidados, justificando su respuesta.
+
+   - VR: GanPeso con valores entre `r min(data$GanPeso)` y `r max(data$GanPeso)` medida en gr
+   - Factores:
+     - Hormona: 
+       - niveles: `r levels(data$Hormona)`
+       - variable de efecto fijo
+     - Camada
+       - niveles: `r levels(data$Camada)`
+       - variable de efecto aleatorio
+     
+     Los factores están cruzados ya que para cada Camada se usan todos los valores de Hormona y para cada Hormona existen todos los valores de Camada.
+
+
+1. Indique el modelo estadístico utilizado, en términos teóricos y aplicado a este
+experimento.
+
+    * Variable respuesta: `GanPeso`
+    * Variables explicativas: `Hormona` y `Camada`
+    
+    Buscamos un modelo que explique la Ganancia del peso en función de la cantidad de Hormona suminstrada y tenemos en cuenta que puede haber variaciones en las camadas.
+    
+    Por lo que usaremos el modelo:
+    \[ 
+        GanPeso_{i,j} = \beta_0 + \beta_1 Hormona_{Baja}  + \beta_2 Hormona_{Alta} + B_j + \varepsilon_{i,j}
+    \]    
+    Con $i$ = 1 a 3 y $j$ = 1 a 6. 
+    
+    \[
+      \varepsilon \approx NID(0, \sigma^2)
+    \]
+    
+    \[
+      B_j \approx NID(0, \sigma^2_{camada})
+    \]
+    
+```{r}
+ggpairs(data)
+```
+    
+    
+1. Describa gráfica y estadísticamente los resultados. Realice un gráfico de perfiles para estudiar el paralelismo entre bloques. ¿Qué significa "paralelismo" en el contexto de este ensayo? ¿Qué piensa que ocurriría si los bloques respondieran de forma "No-paralela"?
+
+```{r}
+m <- lm(GanPeso ~ Hormona + Camada, data = data)
+summary(m)
+```
+```{r}
+anova(m)
+```
+
+```{r}
+(medias.Datos<-aggregate(GanPeso~Hormona+Camada, data,mean))
+
+# Opcion grafica 1
+gp <- ggplot(medias.Datos, aes(x=Hormona, y=GanPeso, colour=Camada, group=Camada))
+gp + geom_line(aes(linetype=Camada), size=.6) +geom_point(aes(shape=Camada), size=3)
+
+# Opcion grafica 2
+gp1 <- ggplot(medias.Datos, aes(x=Camada, y=GanPeso, colour=Hormona, group=Hormona))
+gp1 + geom_line(aes(linetype=Hormona), size=.6) +geom_point(aes(shape=Hormona), size=3)
+```
+
+El paralelismo (que no existe) estaría apuntando a que no hay interacción entre los 2 factores. Igualmente en este caso, nos gustaría que el modelo pueda ser generalizado a cualquier camada, con lo cual pasaremos de tener la camada como factor a tenerla como efecto aleatorio.
+
+```{r}
+m2 <-lmer(GanPeso ~ Hormona + (1 | Camada), data = data)
+summary(m2)
+```
+
+1. Verifique los supuestos del modelo.
+
+   Vamos a verificar los supuestos:
+   
+   - Residuos
+     
+```{r}
+e<-resid(m2) # residuos
+# # re<-rstandard(m2) #residuos estandarizados
+# pre<-predict(m2) #predichos
+# res<-cbind(data$Camada, data$Hormona, data$GanPeso,pre,e,round(re,3)) 
+# # colnames(res)<-c("provincia", "densidad", "aceite", "Predichos", "Residuos", "residuos std") # agregamos los "Column Names"
+# plot(pre, e)
+# # res
+# #Supuestos
+# # Graficos diagnosticos
+# par(mfrow = c(1, 2))
+# # Residuos est vs valores predichos
+# plot(pre, re, xlab="Predichos", ylab="Residuos estandarizados",main="Gr?fico de dispersi?n de RE vs PRED" )
+# abline(0,0)
+
+# qqplot
+qqPlot(e, main = "QQ Plot residuos")
+```
+   
+     Prueba de Shapiro y Levene
+       
+```{r}
+# prueba de shapiro
+shapiro.test(e)
+```
+     No tenemos evidencia para decir que los residuos no tienen provienen de una distribución normal. 
+   
+1. Plantee las hipótesis. Resuelva y concluya, asumiendo un nivel de significación del 5%.
+1. Efectue las comparaciones pertinentes y concluya. Represente gráficamente los
+resultados.
+1. Resuelva el ejercicio incluyendo "Camadas" como factor fijo. Compare y concluya.
+¿Considera que fue efectivo bloquear? Justifique.
