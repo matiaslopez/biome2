@@ -1,0 +1,31 @@
+trat	n_huevos
+control	277
+control	250
+control	231
+control	253
+control	258
+control	246
+control	243
+control	266
+control	248
+control	234
+glifo baja	191
+glifo baja	190
+glifo baja	197
+glifo baja	212
+glifo baja	206
+glifo baja	190
+glifo baja	198
+glifo baja	204
+glifo baja	198
+glifo baja	224
+glifo alta	165
+glifo alta	156
+glifo alta	185
+glifo alta	168
+glifo alta	158
+glifo alta	168
+glifo alta	179
+glifo alta	168
+glifo alta	166
+glifo alta	179
